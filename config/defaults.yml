@@ -1,0 +1,31 @@
+# Default configuration for blockchain simulator
+# These values are used when no configuration file is provided
+
+network:
+  nodes: 10              # Medium network size for balance of realism and performance
+  neighbors: 5            # Moderate connectivity
+  propagation_delay: 0.0  # No network delay for simplicity
+
+mining:
+  miners: 10              # Small number of miners
+  hashrate: 1000.0        # Moderate hashrate
+  blocktime: 10.0         # 10 second blocks (faster than Bitcoin for testing)
+  blocksize: 100          # Moderate block size
+  difficulty: null        # Auto-adjust difficulty
+
+economics:
+  initial_reward: 50.0    # Standard Bitcoin starting reward
+  halving_interval: 210000 # Bitcoin halving schedule
+  max_halvings: 35        # Standard maximum
+
+transactions:
+  wallets: 10            # Moderate number of wallets
+  transactions_per_wallet: 5  # Few transactions per wallet
+  interval: 30.0          # 30 seconds between transactions
+
+simulation:
+  blocks: 1000      # 1000 blocks for reasonable test duration
+  years: null             # Use blocks instead
+  print_interval: 144     # Print daily (if 10s blocks)
+  debug: false            # No debug by default
+  seed: null              # Random seed each run

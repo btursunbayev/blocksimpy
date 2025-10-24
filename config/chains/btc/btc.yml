@@ -1,0 +1,31 @@
+# Bitcoin-like Blockchain Simulation Configuration
+# Realistic Bitcoin network parameters for production simulations
+
+network:
+  nodes: 10            # Number of network nodes (Bitcoin has ~10k+ reachable nodes)  
+  neighbors: 5            # Connections per node (Bitcoin default is 8 outbound)
+  propagation_delay: 0.1  # Block propagation delay in seconds
+
+mining:
+  miners: 10            # Number of mining entities
+  hashrate: 1000000.0     # Hashrate per miner (1 TH/s in H/s equivalent)
+  blocktime: 600.0        # Target block time in seconds (10 minutes)
+  blocksize: 4096         # Max transactions per block (~4000 tx like 4MB blocks)
+  difficulty: null        # Auto-adjust difficulty (null = automatic)
+  
+economics:
+  initial_reward: 50.0    # Initial block reward (Bitcoin started at 50 BTC)
+  halving_interval: 210000 # Blocks between halvings (Bitcoin: ~4 years)
+  max_halvings: 35        # Maximum number of halvings before reward = 0
+  
+transactions:
+  wallets: 10         # Number of wallet entities generating transactions
+  transactions_per_wallet: 10  # Transactions each wallet will generate
+  interval: 10.0         # Average seconds between transactions per wallet
+  
+simulation:
+  blocks: null      # Maximum blocks to simulate (null = unlimited)
+  years: 0.1              # Simulation duration in years (if blocks is null)
+  print_interval: 144     # Print summary every N blocks (144 = ~1 day)
+  debug: false            # Enable detailed debug output
+  seed: 42                # Random seed for reproducible results
