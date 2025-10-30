@@ -1,4 +1,4 @@
-# Realistic Bitcoin network parameters for simulations
+# Realistic Dogecoin network parameters for simulations
 
 network:
   nodes: 10            # Number of network nodes
@@ -8,14 +8,14 @@ network:
 mining:
   miners: 10            # Number of mining entities
   hashrate: 1000000.0     # Hashrate per miner (1 TH/s in H/s equivalent)
-  blocktime: 600.0        # Target block time in seconds (10 minutes)
-  blocksize: 4096         # Max transactions per block (~4000 tx like 4MB blocks)
+  blocktime: 60.0        # Target block time in seconds (1 minute)
+  blocksize: 4096         # Max transactions per block
   difficulty: null        # Auto-adjust difficulty (null = automatic)
   
 economics:
-  initial_reward: 50.0    # Initial block reward
-  halving_interval: 210000 # Blocks between halvings (~4 years)
-  max_halvings: 35        # Maximum number of halvings before reward = 0
+  initial_reward: 10000    # Initial block reward
+  halving_interval: 0 # Blocks between halvings (~4 years)
+  max_halvings: null       # Maximum number of halvings before reward = 0
   
 transactions:
   wallets: 10         # Number of wallet entities generating transactions

@@ -1,3 +1,17 @@
+# Python cache
 **/__pycache__/
-test.py
+*.pyc
+
+# Build outputs  
+build/
+dist/
+*.egg-info/
+
+# Virtual environment
 venv/
+
+# Testing
+.pytest_cache/
+
+# Personal files
+test.py

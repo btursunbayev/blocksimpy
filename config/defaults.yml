@@ -9,8 +9,8 @@ network:
 mining:
   miners: 10              # Small number of miners
   hashrate: 1000.0        # Moderate hashrate
-  blocktime: 10.0         # 10 second blocks (faster than Bitcoin for testing)
-  blocksize: 100          # Moderate block size
+  blocktime: 600.0         # 10 minute blocks
+  blocksize: 4096          # Moderate block size
   difficulty: null        # Auto-adjust difficulty
 
 economics:
