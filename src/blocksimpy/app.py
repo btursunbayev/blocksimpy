@@ -160,15 +160,10 @@ def main() -> None:
     # Create nodes and network topology
     nodes = [Node(env, i) for i in range(config["network"]["nodes"])]
     for n in nodes:
-        n.neighbors = random.sample(
-            [x for x in nodes if x != n], config["network"]["neighbors"]
-        )
+        n.neighbors = random.sample([x for x in nodes if x != n], config["network"]["neighbors"])
 
     # Create miners
-    miners = [
-        Miner(i, config["mining"]["hashrate"])
-        for i in range(config["mining"]["miners"])
-    ]
+    miners = [Miner(i, config["mining"]["hashrate"]) for i in range(config["mining"]["miners"])]
 
     # Run simulation
     coord_proc = env.process(coordinator.coord(env, nodes, miners))
@@ -178,9 +173,7 @@ def main() -> None:
     actual_elapsed_time = time.time() - actual_start_time
 
     # Print comprehensive results summary
-    print_configuration_summary(
-        config, args.chain, coordinator.final_blocks, coordinator
-    )
+    print_configuration_summary(config, args.chain, coordinator.final_blocks, coordinator)
 
     # Add actual execution time and performance metrics
     print(f"  Actual time: {actual_elapsed_time:.6f} seconds")

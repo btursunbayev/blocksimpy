@@ -63,9 +63,7 @@ class Miner:
         self.id = miner_id
         self.h = hashrate  # Individual miner hashrate
 
-    def mine(
-        self, env: simpy.Environment, difficulty: float, block_found_event: simpy.Event
-    ):
+    def mine(self, env: simpy.Environment, difficulty: float, block_found_event: simpy.Event):
         """
         Attempt to mine a block using realistic Proof-of-Work timing.
 

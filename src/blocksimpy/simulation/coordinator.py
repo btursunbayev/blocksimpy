@@ -118,9 +118,7 @@ class SimulationCoordinator:
         """
         # Extract configuration parameters
         target_blocktime = self.config["mining"]["blocktime"]
-        initial_difficulty = self.config["mining"][
-            "difficulty"
-        ]  # None = auto-calculate
+        initial_difficulty = self.config["mining"]["difficulty"]  # None = auto-calculate
         blocks_limit = self.config["simulation"]["blocks"]  # None = unlimited
         block_size = self.config["mining"]["blocksize"]
         print_interval = self.config["simulation"]["print_interval"]
@@ -257,9 +255,7 @@ class SimulationCoordinator:
                 dcoins = self.total_coins - last_coins
                 abt = ti / (block_count - last_b) if block_count - last_b else 0
                 tps = dtx / ti if ti > 0 else 0
-                infl = (
-                    (dcoins / last_coins) * (YEAR / ti) * 100 if last_coins > 0 else 0
-                )
+                infl = (dcoins / last_coins) * (YEAR / ti) * 100 if last_coins > 0 else 0
                 eta = (blocks_limit - block_count) * abt if blocks_limit else 0
                 print(
                     f"[{env.now:.2f}] Sum B:{block_count}/{blocks_limit} {pct:.1f}% abt:{abt:.2f}s "
@@ -286,9 +282,7 @@ class SimulationCoordinator:
             period_duration = total_time - last_t
             if period_duration > 0:
                 infl_total = (
-                    (coins_issued_this_period / last_coins)
-                    * (YEAR / period_duration)
-                    * 100
+                    (coins_issued_this_period / last_coins) * (YEAR / period_duration) * 100
                 )
             else:
                 infl_total = 0

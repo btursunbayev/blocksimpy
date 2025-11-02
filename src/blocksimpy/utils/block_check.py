@@ -94,9 +94,7 @@ def validate_configuration(config):
     user_specified_blocks = blocks is not None
 
     if blocks is None and config["simulation"]["years"]:
-        calculated_limit = int(
-            config["simulation"]["years"] * YEAR / config["mining"]["blocktime"]
-        )
+        calculated_limit = int(config["simulation"]["years"] * YEAR / config["mining"]["blocktime"])
         config["simulation"]["blocks"] = calculated_limit
         blocks = calculated_limit
         calculated_from_years = calculated_limit

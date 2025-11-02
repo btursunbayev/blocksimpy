@@ -195,9 +195,7 @@ class NetworkPropagationOptimizer:
 
         if not propagation_order:
             # Should never happen if map was built correctly
-            print(
-                f"[NetworkOptimizer] WARNING: No propagation path for node {start_node.id}"
-            )
+            print(f"[NetworkOptimizer] WARNING: No propagation path for node {start_node.id}")
             return
 
         # Process each node in the pre-computed order
