@@ -9,34 +9,40 @@ nodes, miners, wallets, and the simulation coordinator.
 
 Application Flow:
 1. Parse command-line arguments and load configuration
-2. Validate and optimize simulation parameters  
+2. Validate and optimize simulation parameters
 3. Initialize simulation environment and components
 4. Execute blockchain simulation with progress monitoring
 5. Report final simulation results and metrics
 """
 
-import simpy
 import random
 import time
-from typing import Dict, Any, List
+from typing import Any, Dict
+
+import simpy
+
+from .cli.args_parser import parse_args
 from .config.config_loader import load_config, merge_cli_args
-from .core.node import Node
 from .core.miner import Miner
+from .core.node import Node
 from .simulation.coordinator import SimulationCoordinator
 from .simulation.wallet import wallet
 from .utils.block_check import validate_configuration
-from .cli.args_parser import parse_args
 
 
-def print_configuration_summary(config: Dict[str, Any], chain_name: str, blocks_mined: int, 
-                                coordinator: SimulationCoordinator) -> None:
+def print_configuration_summary(
+    config: Dict[str, Any],
+    chain_name: str,
+    blocks_mined: int,
+    coordinator: SimulationCoordinator,
+) -> None:
     """
     Display comprehensive simulation results and configuration summary.
-    
+
     Provides complete overview of configuration used and results achieved,
     designed to be displayed at the end of simulation so users can see
     all metrics even after long-running simulations.
-    
+
     Args:
         config: Complete configuration dictionary
         chain_name: Name of blockchain preset being used
@@ -47,68 +53,78 @@ def print_configuration_summary(config: Dict[str, Any], chain_name: str, blocks_
     print("=" * 60)
     print("SIMULATION RESULTS")
     print("=" * 60)
-    
+
     # Configuration recap
-    print(f"Configuration:")
+    print("Configuration:")
     print(f"  Chain: {chain_name}")
-    print(f"  Network: {config['network']['nodes']} nodes, {config['network']['neighbors']} neighbors each")
-    print(f"  Miners: {config['mining']['miners']} miners @ {config['mining']['hashrate']:,.0f} H/s each")
-    print(f"  Wallets: {config['transactions']['wallets']} wallets, {config['transactions']['transactions_per_wallet']} tx each")
-    
+    print(
+        f"  Network: {config['network']['nodes']} nodes, {config['network']['neighbors']} neighbors each"
+    )
+    print(
+        f"  Miners: {config['mining']['miners']} miners @ {config['mining']['hashrate']:,.0f} H/s each"
+    )
+    print(
+        f"  Wallets: {config['transactions']['wallets']} wallets, {
+            config['transactions']['transactions_per_wallet']
+        } tx each"
+    )
+
     # Block time display
-    blocktime = config['mining']['blocktime']
+    blocktime = config["mining"]["blocktime"]
     if blocktime >= 60:
-        time_str = f"{int(blocktime/60)} min"
+        time_str = f"{int(blocktime / 60)} min"
     else:
         time_str = f"{blocktime} sec"
     print(f"  Block time: {time_str}")
     print(f"  Block size: {config['mining']['blocksize']:,} transactions/block")
-    
+
     print()
-    
+
     # Simulation results
     simulated_time = coordinator.final_simulated_time
     simulated_days = simulated_time / 86400
     simulated_years = simulated_time / (365.25 * 86400)
-    
-    print(f"Results:")
+
+    print("Results:")
     print(f"  Blocks mined: {blocks_mined:,}")
     print(f"  Transactions: {coordinator.total_tx:,}")
     print(f"  Coins issued: {coordinator.total_coins:,.2f}")
     print(f"  Network data: {coordinator.network_data / 1_000_000:,.2f} MB")
     print(f"  I/O requests: {coordinator.io_requests:,}")
-    
+
     print()
-    
+
     # Timing information placeholder (to be filled by caller)
-    print(f"Performance:")
-    print(f"  Simulated time: {simulated_time:,.2f} seconds ({simulated_days:,.2f} days / {simulated_years:,.4f} years)")
+    print("Performance:")
+    print(
+        f"  Simulated time: {simulated_time:,.2f} seconds ({simulated_days:,.2f} days / {simulated_years:,.4f} years)"
+    )
 
 
 def main() -> None:
     """
     Main application entry point for blockchain simulation.
-    
+
     Orchestrates the complete simulation lifecycle from configuration loading
     through final result reporting. Implements proper error handling and
     provides clear progress feedback to users.
-    
+
     Execution Flow:
         1. Parse CLI arguments with validation
-        2. Load base configuration and apply CLI overrides  
+        2. Load base configuration and apply CLI overrides
         3. Validate parameters and optimize configuration
         4. Initialize SimPy environment and simulation components
         5. Set up network topology (nodes and peer connections)
         6. Create miners and wallet processes
         7. Execute simulation with coordinator
         8. Report final results and cleanup
-        
+
     Error Handling:
         - Configuration validation errors
         - File I/O errors for config loading
         - Simulation runtime exceptions
         - Graceful cleanup on interruption
-        
+
     No Args or Returns:
         Uses CLI argument parsing and exits with appropriate status codes.
     """
@@ -120,8 +136,8 @@ def main() -> None:
     config = merge_cli_args(config, args)
 
     # Validate configuration
-    validation_results = validate_configuration(config)
-    
+    validate_configuration(config)
+
     # Start timing the actual simulation execution
     actual_start_time = time.time()
 
@@ -131,43 +147,53 @@ def main() -> None:
     env.coordinator = coordinator  # Add reference for nodes to access
 
     # Create wallets
-    for i in range(config['transactions']['wallets']):
-        env.process(wallet(env, i, 
-                          config['transactions']['transactions_per_wallet'], 
-                          config['transactions']['interval'], 
-                          coordinator.pool))
+    for i in range(config["transactions"]["wallets"]):
+        env.process(
+            wallet(
+                env,
+                i,
+                config["transactions"]["transactions_per_wallet"],
+                config["transactions"]["interval"],
+                coordinator.pool,
+            )
+        )
 
     # Create nodes and network topology
-    nodes = [Node(env, i) for i in range(config['network']['nodes'])]
+    nodes = [Node(env, i) for i in range(config["network"]["nodes"])]
     for n in nodes:
-        n.neighbors = random.sample([x for x in nodes if x != n], 
-                                   config['network']['neighbors'])
+        n.neighbors = random.sample(
+            [x for x in nodes if x != n], config["network"]["neighbors"]
+        )
 
     # Create miners
-    miners = [Miner(i, config['mining']['hashrate']) 
-              for i in range(config['mining']['miners'])]
+    miners = [
+        Miner(i, config["mining"]["hashrate"])
+        for i in range(config["mining"]["miners"])
+    ]
 
     # Run simulation
     coord_proc = env.process(coordinator.coord(env, nodes, miners))
     env.run(until=coord_proc)
-    
+
     # Calculate actual execution time
     actual_elapsed_time = time.time() - actual_start_time
-    
+
     # Print comprehensive results summary
-    print_configuration_summary(config, args.chain, coordinator.final_blocks, coordinator)
-    
+    print_configuration_summary(
+        config, args.chain, coordinator.final_blocks, coordinator
+    )
+
     # Add actual execution time and performance metrics
     print(f"  Actual time: {actual_elapsed_time:.6f} seconds")
-    
+
     if coordinator.final_simulated_time > 0:
         speed_factor = coordinator.final_simulated_time / actual_elapsed_time
         print(f"  Speed: {speed_factor:,.0f}x faster than real-time")
-    
+
     if coordinator.final_blocks > 0:
         avg_block_time = coordinator.final_simulated_time / coordinator.final_blocks
         print(f"  Average block time: {avg_block_time:.2f} seconds")
-    
+
     print("=" * 60)
 
 
