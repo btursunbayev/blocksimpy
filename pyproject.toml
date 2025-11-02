@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=69.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,6 +7,7 @@ name = "blocksimpy"
 version = "1.0.0"
 description = "A high-fidelity blockchain discrete event simulator for research and education"
 readme = "README.md"
+license = {text = "Apache-2.0"}
 authors = [
     {name = "Bekmukhamed", email = "bekmukhamed.tursunbayev@gmail.com"},
 ]
@@ -77,9 +78,6 @@ Changelog = "https://github.com/Bekmukhamed/blocksimpy/blob/main/CHANGELOG.md"
 [project.scripts]
 blocksimpy = "blocksimpy.app:main"
 bsim = "blocksimpy.app:main"
-
-[tool.setuptools]
-license-files = ["LICENSE"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
