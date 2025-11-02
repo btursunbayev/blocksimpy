@@ -64,9 +64,8 @@ def print_configuration_summary(
         f"  Miners: {config['mining']['miners']} miners @ {config['mining']['hashrate']:,.0f} H/s each"
     )
     print(
-        f"  Wallets: {config['transactions']['wallets']} wallets, {
-            config['transactions']['transactions_per_wallet']
-        } tx each"
+        f"  Wallets: {config['transactions']['wallets']} wallets, "
+        f"{config['transactions']['transactions_per_wallet']} tx each"
     )
 
     # Block time display
