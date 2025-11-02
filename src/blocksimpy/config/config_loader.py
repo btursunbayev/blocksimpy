@@ -138,4 +138,8 @@ def merge_cli_args(config: Dict[str, Any], args: argparse.Namespace) -> Dict[str
                     config[section] = {}  # Create section if missing
                 config[section][key] = value
     
+    # Special handling: if user specified --years, clear blocks to allow calculation from years
+    if hasattr(args, 'years') and args.years is not None:
+        config['simulation']['blocks'] = None
+    
     return config

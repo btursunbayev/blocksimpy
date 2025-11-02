@@ -1,41 +1,57 @@
-# Blockchain Lab
+# BlockSimPy
 
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 
-A discrete event simulator for blockchain networks models realistic blockchain networks including mining competition, difficulty adjustment, transaction processing, block propagation, and economic incentives. It supports Bitcoin, Litecoin, Bitcoin Cash, and Dogecoin configurations out of the box.
+A discrete event simulator for blockchain networks that models mining competition, block propagation, difficulty adjustment, and economic incentives. The simulator enables controlled experimentation with blockchain protocols without operating live cryptocurrency nodes. Configurations for Bitcoin, Bitcoin Cash, Litecoin, and Dogecoin are provided.
 
-Results include metrics on block times, transaction throughput, mining efficiency, network bandwidth usage, and economic parameters like total coins issued and mining rewards.
-
-## Configuration
-
-The simulator uses YAML configuration files to define network topology, mining parameters, economic models, and transaction generation. Default configurations are provided for major cryptocurrencies, and all parameters can be customized for specific research needs.
 
 ## Installation
 
 ```bash
-pip install blockchain-lab
+pip install blocksimpy
 ```
 
 ## Quick Start
 
-Run a Bitcoin-like simulation with 100 blocks:
+Run a Bitcoin simulation for 100 blocks:
 
 ```bash
-blocklab --chain btc --blocks 100 --transactions 1000
+blocksimpy --chain btc --blocks 100
 ```
-
-Run a custom fast blockchain simulation:
+or
 
 ```bash
-blocklab --blocktime 30 --blocks 50 --miners 5 --transactions 500
+bsim --chain btc --blocks 100
 ```
 
-See all available options:
+Run a custom blockchain:
 
 ```bash
-blocklab --help
+blocksimpy --blocktime 30 --blocks 50 --miners 5
 ```
+
+See all options:
+
+```bash
+blocksimpy --help
+```
+
+## Testing
+
+Validate the simulator works correctly:
+
+```bash
+python tests/test_validation.py
+```
+
+This runs simulations for Bitcoin, Litecoin, Dogecoin, and Bitcoin Cash, validating that metrics match expected values.
+
+## Documentation
+
+[Architecture](docs/ARCHITECTURE.md)
+
+[Configuration guide](config/CONFIGURATION_GUIDE.md)
 
 
 ## License

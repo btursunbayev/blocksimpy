@@ -50,14 +50,14 @@ def create_parser():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Bitcoin-like simulation with 10k transactions
-  %(prog)s --chain btc --transactions 1000 --wallets 10
+  # Bitcoin simulation for 100 blocks
+  %(prog)s --chain btc --blocks 100
   
-  # Custom fast blockchain with 100 blocks
-  %(prog)s --blocktime 30 --blocks 100 --miners 5
+  # Custom blockchain
+  %(prog)s --blocktime 30 --blocks 50 --miners 5
   
   # Large network simulation  
-  %(prog)s --nodes 50 --neighbors 8 --miners 20 --transactions 500
+  %(prog)s --nodes 50 --neighbors 8 --miners 20 --blocks 100
         """
     )
     

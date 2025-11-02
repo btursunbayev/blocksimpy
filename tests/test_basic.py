@@ -15,8 +15,8 @@ sys.path.insert(0, str(src_path))
 
 def test_block_functionality():
     """Test that blocks have correct structure and size calculation."""
-    from blockchain_lab.core.block import Block
-    from blockchain_lab.utils.formatting import HEADER_SIZE
+    from blocksimpy.core.block import Block
+    from blocksimpy.utils.formatting import HEADER_SIZE
     
     # Test block creation with transactions
     block = Block(block_id=1, transaction_count=10, time_since_last=60.0)
@@ -44,7 +44,7 @@ def test_block_functionality():
 
 def test_mining_components():
     """Test that mining components can be created correctly."""
-    from blockchain_lab.core.miner import Miner
+    from blocksimpy.core.miner import Miner
     
     # Test miner creation (simplified without full coordinator)
     # This tests the core miner structure without running full simulation
@@ -109,7 +109,7 @@ def test_actual_simulation():
 
 def test_configuration_loading():
     """Test that configuration files load properly."""
-    from blockchain_lab.config.config_loader import load_config
+    from blocksimpy.config.config_loader import load_config
     
     # Test default configuration
     config = load_config("defaults")

@@ -102,11 +102,3 @@ class Miner:
             
         # Wait for block mining to complete (either by this miner or others)
         yield block_found_event
-        
-    def __repr__(self) -> str:
-        """String representation for debugging."""
-        return f"Miner(id={self.id}, hashrate={self.h})"
-        
-    def __str__(self) -> str:
-        """Human-readable string representation."""
-        return f"Miner #{self.id}: {self.h:,.0f} H/s"

@@ -89,16 +89,19 @@ def validate_configuration(config):
     blocks = config['simulation']['blocks']
     original_limit = blocks
     calculated_from_years = None
+    user_specified_blocks = blocks is not None
     
     if blocks is None and config['simulation']['years']:
         calculated_limit = int(config['simulation']['years'] * YEAR / config['mining']['blocktime'])
         config['simulation']['blocks'] = calculated_limit
         blocks = calculated_limit
         calculated_from_years = calculated_limit
+        user_specified_blocks = False
     
-    # Auto-adjust blocks if it's unreasonably high compared to expected blocks  
+    # Auto-adjust blocks if it was calculated from years, not user-specified
+    # AND only if there are actually transactions to process
     auto_adjusted = False
-    if blocks and blocks > expected_blocks * 3:
+    if blocks and blocks > expected_blocks * 3 and not user_specified_blocks and total_transactions > 0:
         original_limit = blocks
         blocks = expected_blocks
         config['simulation']['blocks'] = blocks

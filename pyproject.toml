@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "blockchain-lab"
+name = "blocksimpy"
 version = "1.0.0"
 description = "A high-fidelity blockchain discrete event simulator for research and education"
 readme = "README.md"
@@ -70,21 +70,21 @@ test = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Bekmukhamed/blockchain-lab"
-Documentation = "https://blockchain-lab.readthedocs.io"
-Repository = "https://github.com/Bekmukhamed/blockchain-lab.git"
-"Bug Tracker" = "https://github.com/Bekmukhamed/blockchain-lab/issues"
-Changelog = "https://github.com/Bekmukhamed/blockchain-lab/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/Bekmukhamed/blocksimpy"
+Documentation = "https://blocksimpy.readthedocs.io"
+Repository = "https://github.com/Bekmukhamed/blocksimpy.git"
+"Bug Tracker" = "https://github.com/Bekmukhamed/blocksimpy/issues"
+Changelog = "https://github.com/Bekmukhamed/blocksimpy/blob/main/CHANGELOG.md"
 
 [project.scripts]
-blockchain-lab = "blockchain_lab.app:main"
-blocklab = "blockchain_lab.app:main"
+blocksimpy = "blocksimpy.app:main"
+bsim = "blocksimpy.app:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-blockchain_lab = ["config/**/*.yml", "config/**/*.yaml"]
+blocksimpy = ["config/**/*.yml", "config/**/*.yaml"]
 
 [tool.black]
 line-length = 100

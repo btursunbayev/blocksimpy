@@ -37,9 +37,13 @@ jobs:
       run: |
         black --check src/
         
-    - name: Test
+    - name: Run basic tests
       run: |
-        python tests/test_core_functionality.py
+        python tests/test_basic.py
+        
+    - name: Run validation tests
+      run: |
+        python tests/test_validation.py
   publish:
     needs: test
     runs-on: ubuntu-latest
