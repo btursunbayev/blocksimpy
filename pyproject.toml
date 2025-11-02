@@ -4,15 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "blocksimpy"
-version = "1.0.0"
+version = "1.0.1"
 description = "A high-fidelity blockchain discrete event simulator for research and education"
 readme = "README.md"
-license = "Apache-2.0"
-license-files = ["LICENSE"]
 authors = [
-    {name = "Bekmukhamed", email = "bekmukhamed.tursunbayev@gmail.com"},
-]
-maintainers = [
     {name = "Bekmukhamed", email = "bekmukhamed.tursunbayev@gmail.com"},
 ]
 keywords = [
@@ -70,15 +65,16 @@ test = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Bekmukhamed/blocksimpy"
-Documentation = "https://blocksimpy.readthedocs.io"
-Repository = "https://github.com/Bekmukhamed/blocksimpy.git"
-"Bug Tracker" = "https://github.com/Bekmukhamed/blocksimpy/issues"
-Changelog = "https://github.com/Bekmukhamed/blocksimpy/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/btursunbayev/blocksimpy"
+Repository = "https://github.com/btursunbayev/blocksimpy.git"
+"Bug Tracker" = "https://github.com/btursunbayev/blocksimpy/issues"
 
 [project.scripts]
 blocksimpy = "blocksimpy.app:main"
 bsim = "blocksimpy.app:main"
+
+[tool.setuptools]
+license-files = ["LICENSE"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

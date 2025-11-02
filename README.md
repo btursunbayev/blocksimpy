@@ -51,7 +51,7 @@ This runs simulations for Bitcoin, Litecoin, Dogecoin, and Bitcoin Cash, validat
 
 [Architecture](docs/ARCHITECTURE.md)
 
-[Configuration guide](config/CONFIGURATION_GUIDE.md)
+[Configuration guide](src/blocksimpy/config/CONFIGURATION_GUIDE.md)
 
 
 ## License

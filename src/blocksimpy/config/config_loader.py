@@ -49,7 +49,8 @@ def load_config(chain_name: str = "defaults") -> Dict[str, Any]:
         >>> config = load_config("btc")
         >>> print(config['mining']['blocktime'])  # 600.0 (10 minutes)
     """
-    config_dir = Path(__file__).parent.parent.parent.parent / "config"
+    # Config files are now in the package directory
+    config_dir = Path(__file__).parent
 
     if chain_name == "defaults":
         # Load defaults.yml from root config directory
