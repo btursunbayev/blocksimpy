@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=75.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,6 +8,7 @@ version = "1.0.0"
 description = "A high-fidelity blockchain discrete event simulator for research and education"
 readme = "README.md"
 license = "Apache-2.0"
+license-files = ["LICENSE"]
 authors = [
     {name = "Bekmukhamed", email = "bekmukhamed@email.com"},
 ]
