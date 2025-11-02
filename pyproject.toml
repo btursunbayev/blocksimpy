@@ -7,12 +7,12 @@ name = "blocksimpy"
 version = "1.0.0"
 description = "A high-fidelity blockchain discrete event simulator for research and education"
 readme = "README.md"
-license = {text = "Apache-2.0"}
+license = {file = "LICENSE"}
 authors = [
-    {name = "Bekmukhamed", email = "bekmukhamed@email.com"},
+    {name = "Bekmukhamed", email = "bekmukhamed.tursunbayev@gmail.com"},
 ]
 maintainers = [
-    {name = "Bekmukhamed", email = "bekmukhamed@email.com"},
+    {name = "Bekmukhamed", email = "bekmukhamed.tursunbayev@gmail.com"},
 ]
 keywords = [
     "blockchain",
