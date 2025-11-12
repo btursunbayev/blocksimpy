@@ -1,7 +1,9 @@
 # BlockSimPy
 
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![PyPI version](https://img.shields.io/pypi/v/blocksimpy.svg)](https://pypi.org/project/blocksimpy/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
+
 
 A discrete event simulator for blockchain networks that models mining competition, block propagation, difficulty adjustment, and economic incentives. The simulator enables controlled experimentation with blockchain protocols without operating live cryptocurrency nodes. Configurations for Bitcoin, Bitcoin Cash, Litecoin, and Dogecoin are provided.
 
