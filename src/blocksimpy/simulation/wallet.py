@@ -13,7 +13,7 @@ Transaction Generation:
 - Transactions include wallet ID and timestamp for tracking
 """
 
-from typing import List, Tuple
+from typing import Deque, Tuple
 
 import simpy
 
@@ -23,7 +23,7 @@ def wallet(
     wallet_id: int,
     transaction_count: int,
     interval: float,
-    transaction_pool: List[Tuple[int, float]],
+    transaction_pool: Deque[Tuple[int, float]],
 ):
     """
     Simulate a wallet that generates transactions over time.
@@ -68,37 +68,3 @@ def wallet(
 
         # Optional: Log transaction creation for debugging
         # print(f"Wallet {wallet_id} created tx #{tx_index + 1} at time {env.now:.2f}")
-
-
-def create_wallets(
-    env: simpy.Environment,
-    wallet_count: int,
-    transactions_per_wallet: int,
-    interval: float,
-    transaction_pool: List[Tuple[int, float]],
-) -> List[simpy.Process]:
-    """
-    Create and start multiple wallet processes for concurrent transaction generation.
-
-    Args:
-        env: SimPy simulation environment
-        wallet_count: Number of wallets to create
-        transactions_per_wallet: Transactions each wallet will generate
-        interval: Time between transactions per wallet
-        transaction_pool: Shared transaction pool for all wallets
-
-    Returns:
-        List of SimPy processes for all wallet operations
-
-    Note:
-        All wallets start immediately and operate concurrently, creating
-        overlapping transaction generation patterns that simulate realistic
-        network behavior with multiple active users.
-    """
-    wallet_processes = []
-    for wallet_id in range(wallet_count):
-        process = env.process(
-            wallet(env, wallet_id, transactions_per_wallet, interval, transaction_pool)
-        )
-        wallet_processes.append(process)
-    return wallet_processes

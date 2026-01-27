@@ -11,6 +11,7 @@ mining:
   blocktime: 150        # Target block time in seconds (2.5 minutes)
   blocksize: 4096         # Max transactions per block
   difficulty: null        # Auto-adjust difficulty (null = automatic)
+  retarget_interval: 2016 # Blocks between difficulty adjustments
   
 economics:
   initial_reward: 50    # Initial block reward

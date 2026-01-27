@@ -1,0 +1,20 @@
+# Changelog
+
+## [1.1.0] - 2026-01-26
+
+### Added
+- `SimulationState` dataclass for checkpoint/resume support
+- `SimulationMetrics` dataclass with `to_dict()` for metrics export
+- `retarget_interval` config option
+- Comprehensive test suite (66 tests)
+
+### Changed
+- Mempool uses `deque` for O(1) FIFO
+- Coordinator uses extracted state and metrics components
+
+### Fixed
+- Seed wiring for reproducibility
+- Dogecoin config halving behavior
+
+### Removed
+- Unused code (`node.env`, `create_wallets()`, `record_block()`)

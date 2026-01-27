@@ -143,15 +143,12 @@ class NetworkPropagationOptimizer:
         while queue:
             current_node, hops = queue.popleft()
 
-            # Skip if already visited (can happen with multiple paths)
             if current_node.id in visited:
                 continue
 
-            # Mark as visited and record in propagation order
             visited.add(current_node.id)
             propagation_order.append((current_node.id, hops))
 
-            # Add all unvisited neighbors to queue at next hop distance
             for neighbor in current_node.neighbors:
                 if neighbor.id not in visited:
                     queue.append((neighbor, hops + 1))
@@ -195,24 +192,23 @@ class NetworkPropagationOptimizer:
 
         if not propagation_order:
             # Should never happen if map was built correctly
-            print(f"[NetworkOptimizer] WARNING: No propagation path for node {start_node.id}")
+            print(
+                f"[NetworkOptimizer] WARNING: No propagation path for node {start_node.id}"
+            )
             return
 
         # Process each node in the pre-computed order
         for node_id, hops in propagation_order:
             node = self.nodes[node_id]
 
-            # Skip if node already has this block (duplicate detection)
-            # This can happen if the same block is propagated from multiple sources
             if block.id in node.blocks:
                 continue
 
-            # Update node's block storage (same as original)
             node.blocks.add(block.id)
 
-            # Update network metrics (same as original)
-            # Each node broadcasts to all its neighbors, consuming bandwidth and I/O
+            # Broadcast to neighbors
             neighbor_count = len(node.neighbors)
             if neighbor_count > 0:
-                coordinator.io_requests += neighbor_count
-                coordinator.network_data += block.size * neighbor_count
+                coordinator.metrics.record_network_io(
+                    bytes_sent=block.size * neighbor_count, io_ops=neighbor_count
+                )

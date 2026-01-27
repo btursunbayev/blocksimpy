@@ -137,13 +137,16 @@ def main() -> None:
     # Validate configuration
     validate_configuration(config)
 
-    # Start timing the actual simulation execution
+    # Set random seed for reproducibility
+    seed = config["simulation"].get("seed")
+    if seed is not None:
+        random.seed(seed)
+
     actual_start_time = time.time()
 
-    # Create SimPy environment and coordinator
     env = simpy.Environment()
     coordinator = SimulationCoordinator(config)
-    env.coordinator = coordinator  # Add reference for nodes to access
+    env.coordinator = coordinator
 
     # Create wallets
     for i in range(config["transactions"]["wallets"]):
@@ -160,22 +163,26 @@ def main() -> None:
     # Create nodes and network topology
     nodes = [Node(env, i) for i in range(config["network"]["nodes"])]
     for n in nodes:
-        n.neighbors = random.sample([x for x in nodes if x != n], config["network"]["neighbors"])
+        n.neighbors = random.sample(
+            [x for x in nodes if x != n], config["network"]["neighbors"]
+        )
 
     # Create miners
-    miners = [Miner(i, config["mining"]["hashrate"]) for i in range(config["mining"]["miners"])]
+    miners = [
+        Miner(i, config["mining"]["hashrate"])
+        for i in range(config["mining"]["miners"])
+    ]
 
     # Run simulation
     coord_proc = env.process(coordinator.coord(env, nodes, miners))
     env.run(until=coord_proc)
 
-    # Calculate actual execution time
     actual_elapsed_time = time.time() - actual_start_time
 
-    # Print comprehensive results summary
-    print_configuration_summary(config, args.chain, coordinator.final_blocks, coordinator)
+    print_configuration_summary(
+        config, args.chain, coordinator.final_blocks, coordinator
+    )
 
-    # Add actual execution time and performance metrics
     print(f"  Actual time: {actual_elapsed_time:.6f} seconds")
 
     if coordinator.final_simulated_time > 0:

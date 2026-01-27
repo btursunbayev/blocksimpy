@@ -12,6 +12,7 @@ mining:
   blocktime: 600.0         # 10 minute blocks
   blocksize: 4096          # Moderate block size
   difficulty: null        # Auto-adjust difficulty
+  retarget_interval: 2016 # Blocks between difficulty adjustments
 
 economics:
   initial_reward: 50.0    # Standard Bitcoin starting reward

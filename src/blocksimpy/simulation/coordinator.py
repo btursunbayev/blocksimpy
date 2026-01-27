@@ -18,7 +18,8 @@ Core Responsibilities:
 """
 
 import random
-from typing import Any, Dict, List, Optional
+from collections import deque
+from typing import Any, Deque, Dict, List, Optional
 
 import simpy
 
@@ -27,6 +28,8 @@ from ..core.miner import Miner
 from ..core.node import Node
 from ..utils.formatting import YEAR, human
 from ..utils.network_optimizer import NetworkPropagationOptimizer
+from .metrics import SimulationMetrics
+from .state import SimulationState
 
 
 class SimulationCoordinator:
@@ -53,7 +56,7 @@ class SimulationCoordinator:
         io_requests (int): Total network I/O operations performed
         total_tx (int): Cumulative transactions confirmed in blocks
         total_coins (float): Total coins issued through mining rewards
-        pool (List): Unconfirmed transaction pool (mempool)
+        pool (Deque): Unconfirmed transaction pool (mempool, using deque for O(1) FIFO)
         network_optimizer (NetworkPropagationOptimizer): Graph-based network propagation optimizer
     """
 
@@ -67,16 +70,17 @@ class SimulationCoordinator:
         """
         self.config = config
 
-        # Network metrics tracking
-        self.network_data = 0  # Total bytes transmitted (for bandwidth analysis)
-        self.io_requests = 0  # Total I/O operations (for network load analysis)
+        # Metrics tracking (network, performance)
+        self.metrics = SimulationMetrics()
 
-        # Blockchain state tracking
-        self.total_tx = 0  # Cumulative confirmed transactions
-        self.total_coins = 0.0  # Total coins issued via mining rewards
+        # Legacy attributes for backward compatibility (synced from metrics/state)
+        self.network_data = 0
+        self.io_requests = 0
+        self.total_tx = 0
+        self.total_coins = 0.0
 
-        # Transaction mempool (unconfirmed transaction pool)
-        self.pool: List[tuple] = []  # Format: [(wallet_id, timestamp), ...]
+        # Transaction mempool
+        self.pool: Deque[tuple] = deque()  # (wallet_id, timestamp) tuples
 
         # Network optimizer (initialized later when nodes are created)
         self.network_optimizer: Optional[NetworkPropagationOptimizer] = None
@@ -118,7 +122,9 @@ class SimulationCoordinator:
         """
         # Extract configuration parameters
         target_blocktime = self.config["mining"]["blocktime"]
-        initial_difficulty = self.config["mining"]["difficulty"]  # None = auto-calculate
+        initial_difficulty = self.config["mining"][
+            "difficulty"
+        ]  # None = auto-calculate
         blocks_limit = self.config["simulation"]["blocks"]  # None = unlimited
         block_size = self.config["mining"]["blocksize"]
         print_interval = self.config["simulation"]["print_interval"]
@@ -127,6 +133,7 @@ class SimulationCoordinator:
         tx_per_wallet = self.config["transactions"]["transactions_per_wallet"]
         init_reward = self.config["economics"]["initial_reward"]
         halving_interval = self.config["economics"]["halving_interval"]
+        retarget_interval = self.config["mining"].get("retarget_interval", 2016)
 
         # Initialize network propagation optimizer
         # Pre-computes block propagation paths using BFS for optimal performance
@@ -135,40 +142,30 @@ class SimulationCoordinator:
         else:
             self.network_optimizer = None
 
-        # Initialize simulation state variables
-        block_count = 0
-        last_block_time = 0
-        last_adjustment_time = 0
-        blocks_since_adjustment = 0
-
-        # Progress tracking for reporting
-        last_t = last_b = last_tx = last_coins = 0
-
-        # Initialize mining difficulty
-        # Auto-calculate as blocktime * total_hashrate if not specified
+        # Initialize simulation state (serializable for checkpoint/resume)
         total_hashrate = sum(m.h for m in miners)
-        difficulty = (
-            initial_difficulty
-            if initial_difficulty is not None
-            else target_blocktime * total_hashrate
-        )
+        state = SimulationState.from_config(self.config, total_hashrate)
+
+        # Local aliases for frequently accessed state (readability)
+        difficulty = state.difficulty
+        reward = state.reward
 
         # Cache total hashrate for performance (miners don't change during simulation)
         total_hashrate_str = human(total_hashrate)  # Pre-format for logging
 
-        # Initialize economic model
-        reward = init_reward  # Current block reward
-        halvings = 0  # Number of halvings completed
+        # Economic model config
         max_halvings = self.config["economics"]["max_halvings"]
+        # Treat None as infinity (always issue rewards)
+        if max_halvings is None:
+            max_halvings = float("inf")
 
         # Transaction processing setup
         has_tx = tx_per_wallet > 0
         total_needed = wallets * tx_per_wallet if has_tx else None
-        pool_processed = 0
 
         while True:
             # Check block limit first - if specified, it takes precedence
-            if blocks_limit is not None and block_count >= blocks_limit:
+            if blocks_limit is not None and state.block_count >= blocks_limit:
                 break
             # Only check transaction completion if we have transactions AND no block limit
             # (if block limit is set, keep mining until we hit it)
@@ -176,27 +173,31 @@ class SimulationCoordinator:
                 blocks_limit is None
                 and has_tx
                 and total_needed > 0
-                and pool_processed >= total_needed
+                and state.pool_processed >= total_needed
             ):
                 break
 
-            # Difficulty retarget every 2016 blocks
-            if initial_difficulty is None and blocks_since_adjustment >= 2016:
-                elapsed = env.now - last_adjustment_time
+            # Difficulty retarget every retarget_interval blocks
+            if (
+                initial_difficulty is None
+                and state.blocks_since_adjustment >= retarget_interval
+            ):
+                elapsed = env.now - state.last_adjustment_time
                 actual_avg = (
-                    elapsed / blocks_since_adjustment
-                    if blocks_since_adjustment
+                    elapsed / state.blocks_since_adjustment
+                    if state.blocks_since_adjustment
                     else target_blocktime
                 )
                 factor = target_blocktime / actual_avg if actual_avg > 0 else 1
                 difficulty *= factor
-                last_adjustment_time = env.now
-                blocks_since_adjustment = 0
+                state.difficulty = difficulty
+                state.last_adjustment_time = env.now
+                state.blocks_since_adjustment = 0
                 if debug_mode:
                     print(
                         f"[{env.now:.2f}] Diff:{human(difficulty)} H:{total_hashrate_str} "
-                        f"Tx:{self.total_tx} C:{human(self.total_coins)} Pool:{len(self.pool)} "
-                        f"infl:N/A NMB:{self.network_data / 1e6:.2f} IO:{self.io_requests}"
+                        f"Tx:{state.total_tx} C:{human(state.total_coins)} Pool:{len(self.pool)} "
+                        f"infl:N/A NMB:{self.metrics.network_data / 1e6:.2f} IO:{self.metrics.io_requests}"
                     )
 
             # Mining round
@@ -206,34 +207,35 @@ class SimulationCoordinator:
             winner = yield block_found_event
 
             # New block
-            time_since_last = env.now - last_block_time
-            last_block_time = env.now
-            block_count += 1
-            blocks_since_adjustment += 1
+            time_since_last = env.now - state.last_block_time
+            state.last_block_time = env.now
+            state.block_count += 1
+            state.blocks_since_adjustment += 1
 
             if has_tx:
                 avail = len(self.pool)
                 take = min(avail, block_size)
-                pool_processed += take
+                state.pool_processed += take
                 for _ in range(take):
-                    self.pool.pop(0)
+                    self.pool.popleft()
                 txs = take + 1
             else:
                 txs = 1
 
-            b = Block(block_count, txs, time_since_last)
-            self.total_tx += txs
+            b = Block(state.block_count, txs, time_since_last)
+            state.total_tx += txs
 
             # Mint reward and halving
-            if halvings < max_halvings:
-                self.total_coins += reward
+            if state.halvings < max_halvings:
+                state.total_coins += reward
             if (
                 halving_interval > 0
-                and block_count % halving_interval == 0
-                and halvings < max_halvings
+                and state.block_count % halving_interval == 0
+                and state.halvings < max_halvings
             ):
-                halvings += 1
-                reward = reward / 2 if halvings < max_halvings else 0
+                state.halvings += 1
+                reward = reward / 2 if state.halvings < max_halvings else 0
+                state.reward = reward
 
             # Propagate block through network using optimized graph-based algorithm
             # Uses pre-computed BFS paths for 5-10x performance improvement
@@ -244,66 +246,77 @@ class SimulationCoordinator:
             if debug_mode:
                 print(
                     f"[{env.now:.2f}] B{b.id} by M{winner.id} dt:{b.dt:.2f}s "
-                    f"Diff:{human(difficulty)} H:{total_hashrate_str} Tx:{self.total_tx} "
-                    f"C:{human(self.total_coins)} Pool:{len(self.pool)} "
-                    f"infl:N/A NMB:{self.network_data / 1e6:.2f} IO:{self.io_requests}"
+                    f"Diff:{human(difficulty)} H:{total_hashrate_str} Tx:{state.total_tx} "
+                    f"C:{human(state.total_coins)} Pool:{len(self.pool)} "
+                    f"infl:N/A NMB:{self.metrics.network_data / 1e6:.2f} IO:{self.metrics.io_requests}"
                 )
-            elif block_count % print_interval == 0:
-                pct = (block_count / blocks_limit) * 100 if blocks_limit else 0
-                ti = env.now - last_t
-                dtx = self.total_tx - last_tx
-                dcoins = self.total_coins - last_coins
-                abt = ti / (block_count - last_b) if block_count - last_b else 0
+            elif state.block_count % print_interval == 0:
+                pct = (state.block_count / blocks_limit) * 100 if blocks_limit else 0
+                ti = env.now - state.last_t
+                dtx = state.total_tx - state.last_tx
+                dcoins = state.total_coins - state.last_coins
+                abt = (
+                    ti / (state.block_count - state.last_b)
+                    if state.block_count - state.last_b
+                    else 0
+                )
                 tps = dtx / ti if ti > 0 else 0
-                infl = (dcoins / last_coins) * (YEAR / ti) * 100 if last_coins > 0 else 0
-                eta = (blocks_limit - block_count) * abt if blocks_limit else 0
-                print(
-                    f"[{env.now:.2f}] Sum B:{block_count}/{blocks_limit} {pct:.1f}% abt:{abt:.2f}s "
-                    f"tps:{tps:.2f} infl:{infl:.2f}% ETA:{eta:.2f}s "
-                    f"Diff:{human(difficulty)} H:{total_hashrate_str} Tx:{self.total_tx} "
-                    f"C:{human(self.total_coins)} Pool:{len(self.pool)} "
-                    f"NMB:{self.network_data / 1e6:.2f} IO:{self.io_requests}"
+                infl = (
+                    (dcoins / state.last_coins) * (YEAR / ti) * 100
+                    if state.last_coins > 0
+                    else 0
                 )
-                last_t, last_b, last_tx, last_coins = (
+                eta = (blocks_limit - state.block_count) * abt if blocks_limit else 0
+                print(
+                    f"[{env.now:.2f}] Sum B:{state.block_count}/{blocks_limit} {pct:.1f}% abt:{abt:.2f}s "
+                    f"tps:{tps:.2f} infl:{infl:.2f}% ETA:{eta:.2f}s "
+                    f"Diff:{human(difficulty)} H:{total_hashrate_str} Tx:{state.total_tx} "
+                    f"C:{human(state.total_coins)} Pool:{len(self.pool)} "
+                    f"NMB:{self.metrics.network_data / 1e6:.2f} IO:{self.metrics.io_requests}"
+                )
+                state.last_t, state.last_b, state.last_tx, state.last_coins = (
                     env.now,
-                    block_count,
-                    self.total_tx,
-                    self.total_coins,
+                    state.block_count,
+                    state.total_tx,
+                    state.total_coins,
                 )
 
         # Final summary
         total_time = env.now
-        abt = total_time / block_count if block_count else 0
-        tps_total = self.total_tx / total_time if total_time > 0 else 0
 
-        # Calculate annualized inflation rate
-        if block_count > 0 and total_time > 0 and last_coins > 0:
-            coins_issued_this_period = self.total_coins - last_coins
-            period_duration = total_time - last_t
-            if period_duration > 0:
-                infl_total = (
-                    (coins_issued_this_period / last_coins) * (YEAR / period_duration) * 100
-                )
-            else:
-                infl_total = 0
-        else:
-            infl_total = 0
+        # Finalize metrics (computes derived values)
+        self.metrics.finalize(
+            total_time=total_time,
+            block_count=state.block_count,
+            total_tx=state.total_tx,
+            total_coins=state.total_coins,
+            last_coins=state.last_coins,
+            last_t=state.last_t,
+        )
 
-        # Store final results for timing display in main
-        self.final_simulated_time = total_time
-        self.final_blocks = block_count
+        abt = self.metrics.avg_block_time
+        tps_total = self.metrics.transactions_per_second
+        infl_total = self.metrics.inflation_rate
+
+        # Sync to legacy attributes for backward compatibility
+        self.final_simulated_time = self.metrics.final_simulated_time
+        self.final_blocks = self.metrics.final_blocks
+        self.total_tx = state.total_tx
+        self.total_coins = state.total_coins
+        self.network_data = self.metrics.network_data
+        self.io_requests = self.metrics.io_requests
 
         if blocks_limit:
             print(
-                f"[******] End B:{block_count}/{blocks_limit} 100.0% abt:{abt:.2f}s tps:{tps_total:.2f} "
+                f"[******] End B:{state.block_count}/{blocks_limit} 100.0% abt:{abt:.2f}s tps:{tps_total:.2f} "
                 f"infl:{infl_total:.2f}% Diff:{human(difficulty)} H:{total_hashrate_str} "
-                f"Tx:{self.total_tx} C:{human(self.total_coins)} Pool:{len(self.pool)} "
-                f"NMB:{self.network_data / 1e6:.2f} IO:{self.io_requests}"
+                f"Tx:{state.total_tx} C:{human(state.total_coins)} Pool:{len(self.pool)} "
+                f"NMB:{self.metrics.network_data / 1e6:.2f} IO:{self.metrics.io_requests}"
             )
         else:
             print(
-                f"[******] End B:{block_count} abt:{abt:.2f}s tps:{tps_total:.2f} "
+                f"[******] End B:{state.block_count} abt:{abt:.2f}s tps:{tps_total:.2f} "
                 f"infl:{infl_total:.2f}% Diff:{human(difficulty)} H:{total_hashrate_str} "
-                f"Tx:{self.total_tx} C:{human(self.total_coins)} Pool:{len(self.pool)} "
-                f"NMB:{self.network_data / 1e6:.2f} IO:{self.io_requests}"
+                f"Tx:{state.total_tx} C:{human(state.total_coins)} Pool:{len(self.pool)} "
+                f"NMB:{self.metrics.network_data / 1e6:.2f} IO:{self.metrics.io_requests}"
             )

@@ -60,7 +60,6 @@ class Node:
             Neighbor connections are established after all nodes are created
             to ensure proper random topology generation without self-connections.
         """
-        self.env = env
         self.id = node_id
         self.blocks: Set[int] = set()  # Block IDs this node has received
         self.neighbors: List["Node"] = []  # Connected peer nodes
