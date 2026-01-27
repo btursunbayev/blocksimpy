@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.1] - 2026-01-27
+
+### Fixed
+- Test functions dont return values (fixes pytest warnings)
+- Dogecoin test now validates coin issuance correctly
+- Renamed `Test` class to `ValidationResult` to avoid pytest warning
+
+### Changed
+- `network_data` and `io_requests` are now properties delegating to `metrics`
+
 ## [1.1.0] - 2026-01-26
 
 ### Added

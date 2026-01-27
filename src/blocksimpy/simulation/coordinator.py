@@ -73,9 +73,9 @@ class SimulationCoordinator:
         # Metrics tracking (network, performance)
         self.metrics = SimulationMetrics()
 
-        # Legacy attributes for backward compatibility (synced from metrics/state)
-        self.network_data = 0
-        self.io_requests = 0
+        # Final results (set after simulation completes)
+        self.final_simulated_time = 0.0
+        self.final_blocks = 0
         self.total_tx = 0
         self.total_coins = 0.0
 
@@ -84,6 +84,16 @@ class SimulationCoordinator:
 
         # Network optimizer (initialized later when nodes are created)
         self.network_optimizer: Optional[NetworkPropagationOptimizer] = None
+
+    @property
+    def network_data(self) -> int:
+        """Total bytes transmitted across network."""
+        return self.metrics.network_data
+
+    @property
+    def io_requests(self) -> int:
+        """Total network I/O operations performed."""
+        return self.metrics.io_requests
 
     def coord(self, env: simpy.Environment, nodes: List[Node], miners: List[Miner]):
         """
@@ -298,13 +308,11 @@ class SimulationCoordinator:
         tps_total = self.metrics.transactions_per_second
         infl_total = self.metrics.inflation_rate
 
-        # Sync to legacy attributes for backward compatibility
+        # Sync final results for external access
         self.final_simulated_time = self.metrics.final_simulated_time
         self.final_blocks = self.metrics.final_blocks
         self.total_tx = state.total_tx
         self.total_coins = state.total_coins
-        self.network_data = self.metrics.network_data
-        self.io_requests = self.metrics.io_requests
 
         if blocks_limit:
             print(
