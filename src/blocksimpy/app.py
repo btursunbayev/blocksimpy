@@ -26,6 +26,7 @@ from .config.config_loader import load_config, merge_cli_args
 from .core.miner import Miner
 from .core.node import Node
 from .simulation.coordinator import SimulationCoordinator
+from .simulation.state import SimulationState
 from .simulation.wallet import wallet
 from .utils.block_check import validate_configuration
 
@@ -173,8 +174,24 @@ def main() -> None:
         for i in range(config["mining"]["miners"])
     ]
 
+    # Load checkpoint if resuming
+    initial_state = None
+    if args.resume:
+        initial_state = SimulationState.load(args.resume)
+        print(
+            f"Resuming from checkpoint: {args.resume} (block {initial_state.block_count})"
+        )
+
     # Run simulation
-    coord_proc = env.process(coordinator.coord(env, nodes, miners))
+    coord_proc = env.process(
+        coordinator.coord(
+            env,
+            nodes,
+            miners,
+            initial_state=initial_state,
+            checkpoint_file=args.checkpoint,
+        )
+    )
     env.run(until=coord_proc)
 
     actual_elapsed_time = time.time() - actual_start_time
@@ -194,6 +211,13 @@ def main() -> None:
         print(f"  Average block time: {avg_block_time:.2f} seconds")
 
     print("=" * 60)
+
+    # Export metrics if requested
+    if args.export_metrics:
+        coordinator.metrics.export_json(
+            args.export_metrics, coordinator.total_tx, coordinator.total_coins
+        )
+        print(f"Metrics exported to: {args.export_metrics}")
 
 
 if __name__ == "__main__":

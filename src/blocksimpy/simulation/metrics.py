@@ -61,7 +61,7 @@ class SimulationMetrics:
                     (coins_issued / last_coins) * (YEAR / period) * 100
                 )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self, total_tx: int = 0, total_coins: float = 0.0) -> Dict[str, Any]:
         """Export metrics as dictionary for JSON/CSV export."""
         return {
             "network_data_bytes": self.network_data,
@@ -72,4 +72,15 @@ class SimulationMetrics:
             "avg_block_time": self.avg_block_time,
             "tps": self.transactions_per_second,
             "inflation_rate_percent": self.inflation_rate,
+            "total_transactions": total_tx,
+            "total_coins_issued": total_coins,
         }
+
+    def export_json(
+        self, filepath: str, total_tx: int = 0, total_coins: float = 0.0
+    ) -> None:
+        """Export metrics to JSON file."""
+        import json
+
+        with open(filepath, "w") as f:
+            json.dump(self.to_dict(total_tx, total_coins), f, indent=2)

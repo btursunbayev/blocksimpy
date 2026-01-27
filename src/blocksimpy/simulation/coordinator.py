@@ -95,7 +95,14 @@ class SimulationCoordinator:
         """Total network I/O operations performed."""
         return self.metrics.io_requests
 
-    def coord(self, env: simpy.Environment, nodes: List[Node], miners: List[Miner]):
+    def coord(
+        self,
+        env: simpy.Environment,
+        nodes: List[Node],
+        miners: List[Miner],
+        initial_state: Optional[SimulationState] = None,
+        checkpoint_file: Optional[str] = None,
+    ):
         """
         Main coordination loop for blockchain discrete event simulation.
 
@@ -108,6 +115,8 @@ class SimulationCoordinator:
             env: SimPy discrete event simulation environment
             nodes: List of network nodes for block propagation
             miners: List of miners competing to discover blocks
+            initial_state: Optional state to resume from (for checkpoint/resume)
+            checkpoint_file: Optional file path to save checkpoints
 
         Simulation Algorithm:
             1. Initialize difficulty and economic parameters
@@ -141,7 +150,6 @@ class SimulationCoordinator:
         debug_mode = self.config["simulation"]["debug"]
         wallets = self.config["transactions"]["wallets"]
         tx_per_wallet = self.config["transactions"]["transactions_per_wallet"]
-        init_reward = self.config["economics"]["initial_reward"]
         halving_interval = self.config["economics"]["halving_interval"]
         retarget_interval = self.config["mining"].get("retarget_interval", 2016)
 
@@ -152,9 +160,19 @@ class SimulationCoordinator:
         else:
             self.network_optimizer = None
 
-        # Initialize simulation state (serializable for checkpoint/resume)
+        # Initialize simulation state (use provided state for resume, else create new)
         total_hashrate = sum(m.h for m in miners)
-        state = SimulationState.from_config(self.config, total_hashrate)
+        if initial_state is not None:
+            state = initial_state
+            # Reset progress tracking to current env.now (0) to avoid negative deltas
+            # The checkpoint preserves block_count, coins, etc. but progress metrics
+            # need to restart from this point in the new simulation environment
+            state.last_t = env.now
+            state.last_b = state.block_count
+            state.last_tx = state.total_tx
+            state.last_coins = state.total_coins
+        else:
+            state = SimulationState.from_config(self.config, total_hashrate)
 
         # Local aliases for frequently accessed state (readability)
         difficulty = state.difficulty
@@ -290,6 +308,10 @@ class SimulationCoordinator:
                     state.total_tx,
                     state.total_coins,
                 )
+
+                # Save checkpoint if requested
+                if checkpoint_file:
+                    state.save(checkpoint_file)
 
         # Final summary
         total_time = env.now

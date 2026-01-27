@@ -1,6 +1,7 @@
 # BlockSimPy
 
-[![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![CI](https://github.com/bekmukhamed/blocksimpy/actions/workflows/ci.yml/badge.svg)](https://github.com/bekmukhamed/blocksimpy/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![PyPI version](https://img.shields.io/pypi/v/blocksimpy.svg)](https://pypi.org/project/blocksimpy/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 

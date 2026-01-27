@@ -188,6 +188,25 @@ Examples:
         action="store_true",
         help="Enable detailed debug output (prints every block)",
     )
+    output_group.add_argument(
+        "--export-metrics",
+        dest="export_metrics",
+        type=str,
+        metavar="FILE",
+        help="Export simulation metrics to JSON file after completion",
+    )
+    output_group.add_argument(
+        "--checkpoint",
+        type=str,
+        metavar="FILE",
+        help="Save checkpoint to FILE at each print interval",
+    )
+    output_group.add_argument(
+        "--resume",
+        type=str,
+        metavar="FILE",
+        help="Resume simulation from checkpoint FILE",
+    )
 
     return parser
 
