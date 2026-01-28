@@ -237,13 +237,19 @@ class SimulationCoordinator:
                 env.process(m.mine(env, difficulty, block_found_event))
             winner = yield block_found_event
 
-            # Track selfish mining attack if present
-            selfish_miner = next(
-                (m for m in miners if getattr(m, "is_selfish", False)), None
+            # Track attack if attacker present
+            attacker = next(
+                (
+                    m
+                    for m in miners
+                    if getattr(m, "is_selfish", False)
+                    or getattr(m, "is_attacker", False)
+                ),
+                None,
             )
-            if selfish_miner is not None:
-                is_attacker_block = winner is selfish_miner
-                selfish_miner.on_block_found(is_attacker_block, reward)
+            if attacker is not None:
+                is_attacker_block = winner is attacker
+                attacker.on_block_found(is_attacker_block, reward)
 
             # New block
             time_since_last = env.now - state.last_block_time
@@ -347,12 +353,17 @@ class SimulationCoordinator:
         self.total_tx = state.total_tx
         self.total_coins = state.total_coins
 
-        # Capture attack metrics if selfish miner present
-        selfish_miner = next(
-            (m for m in miners if getattr(m, "is_selfish", False)), None
+        # Capture attack metrics if attacker present
+        attacker = next(
+            (
+                m
+                for m in miners
+                if getattr(m, "is_selfish", False) or getattr(m, "is_attacker", False)
+            ),
+            None,
         )
-        if selfish_miner is not None:
-            self.attack_metrics = selfish_miner.get_attack_metrics()
+        if attacker is not None:
+            self.attack_metrics = attacker.get_attack_metrics()
 
         if blocks_limit:
             print(

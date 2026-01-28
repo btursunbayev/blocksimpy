@@ -178,16 +178,31 @@ Examples:
     attack_group.add_argument(
         "--attack",
         type=str,
-        choices=["selfish"],
+        choices=["selfish", "double-spend", "eclipse"],
         metavar="TYPE",
-        help="Enable attack simulation (selfish = selfish mining)",
+        help="Attack type: selfish, double-spend, eclipse",
     )
     attack_group.add_argument(
         "--attacker-hashrate",
         dest="attacker_hashrate",
         type=float,
         metavar="RATIO",
-        help="Attacker's hashrate as fraction of total (0.0-1.0, e.g. 0.3 = 30%%)",
+        help="Attacker's hashrate as fraction of total (0.0-1.0)",
+    )
+    attack_group.add_argument(
+        "--confirmations",
+        type=int,
+        default=6,
+        metavar="N",
+        help="Confirmations for double-spend attack (default: 6)",
+    )
+    attack_group.add_argument(
+        "--victim-nodes",
+        dest="victim_nodes",
+        type=int,
+        default=1,
+        metavar="N",
+        help="Number of nodes to eclipse (default: 1)",
     )
 
     # === Reporting & Debug (Section 2.4) ===

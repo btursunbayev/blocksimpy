@@ -179,7 +179,9 @@ def main() -> None:
 
         attacker_ratio = args.attacker_hashrate or 0.3  # Default 30%
         attacker_hashrate = hashrate * num_miners * attacker_ratio
-        honest_hashrate = hashrate * num_miners * (1 - attacker_ratio) / (num_miners - 1)
+        honest_hashrate = (
+            hashrate * num_miners * (1 - attacker_ratio) / (num_miners - 1)
+        )
 
         # One selfish miner with proportional hashrate
         miners.append(SelfishMiner(0, attacker_hashrate))
@@ -188,7 +190,37 @@ def main() -> None:
         for i in range(1, num_miners):
             miners.append(Miner(i, honest_hashrate))
 
-        print(f"Attack mode: selfish mining (attacker={attacker_ratio*100:.0f}% hashrate)")
+        print(
+            f"Attack mode: selfish mining (attacker={attacker_ratio * 100:.0f}% hashrate)"
+        )
+
+    elif args.attack == "double-spend":
+        from .attacks import DoubleSpendMiner
+
+        attacker_ratio = args.attacker_hashrate or 0.51  # Default 51%
+        attacker_hashrate = hashrate * num_miners * attacker_ratio
+        honest_hashrate = (
+            hashrate * num_miners * (1 - attacker_ratio) / (num_miners - 1)
+        )
+
+        # One double-spend attacker
+        miners.append(DoubleSpendMiner(0, attacker_hashrate, args.confirmations))
+
+        # Rest are honest miners
+        for i in range(1, num_miners):
+            miners.append(Miner(i, honest_hashrate))
+
+        print(
+            f"Attack mode: double-spend (attacker={attacker_ratio * 100:.0f}% hashrate, "
+            f"{args.confirmations} confirmations)"
+        )
+
+    elif args.attack == "eclipse":
+        # Eclipse attack uses normal miners but manipulates propagation
+        miners = [Miner(i, hashrate) for i in range(num_miners)]
+        # Eclipse attacker will be set up in coordinator
+        print(f"Attack mode: eclipse ({args.victim_nodes} victim nodes)")
+
     else:
         # Normal mode: all honest miners
         miners = [Miner(i, hashrate) for i in range(num_miners)]
@@ -233,16 +265,36 @@ def main() -> None:
 
     # Print attack results if present
     if coordinator.attack_metrics:
-        print()
-        print("ATTACK RESULTS (Selfish Mining)")
-        print("-" * 40)
         m = coordinator.attack_metrics
-        print(f"  Attacker blocks: {m['attacker_blocks']}")
-        print(f"  Honest blocks: {m['honest_blocks']}")
-        print(f"  Wasted honest blocks: {m['wasted_blocks']}")
-        print(f"  Attacker share: {m['attacker_share']*100:.1f}%")
-        print(f"  Attacker rewards: {m['attacker_rewards']:.2f}")
-        print(f"  Honest rewards: {m['honest_rewards']:.2f}")
+        attack_type = m.get("attack_type", "selfish")
+
+        print()
+        if attack_type == "double_spend_51":
+            print("ATTACK RESULTS (51% Double Spend)")
+            print("-" * 40)
+            print(f"  Attack attempts: {m['attack_attempts']}")
+            print(f"  Successful: {m['successful_attacks']}")
+            print(f"  Failed: {m['failed_attacks']}")
+            print(f"  Success rate: {m['success_rate'] * 100:.1f}%")
+            print(f"  Double-spent value: {m['double_spent_value']:.2f}")
+            print(f"  Confirmations: {m['target_confirmations']}")
+        elif attack_type == "eclipse":
+            print("ATTACK RESULTS (Eclipse)")
+            print("-" * 40)
+            print(f"  Victim node: {m['victim_node_id']}")
+            print(f"  Blocks withheld: {m['blocks_withheld']}")
+            print(f"  Victim wasted blocks: {m['wasted_victim_blocks']}")
+            print(f"  Eclipse duration: {m['eclipse_duration_blocks']} blocks")
+        else:
+            # Selfish mining (default)
+            print("ATTACK RESULTS (Selfish Mining)")
+            print("-" * 40)
+            print(f"  Attacker blocks: {m['attacker_blocks']}")
+            print(f"  Honest blocks: {m['honest_blocks']}")
+            print(f"  Wasted honest blocks: {m['wasted_blocks']}")
+            print(f"  Attacker share: {m['attacker_share'] * 100:.1f}%")
+            print(f"  Attacker rewards: {m['attacker_rewards']:.2f}")
+            print(f"  Honest rewards: {m['honest_rewards']:.2f}")
         print("=" * 60)
 
     # Export metrics if requested

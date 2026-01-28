@@ -3,12 +3,15 @@
 ## [1.3.0] - 2026-01-27
 
 ### Added
-- New `--attack selfish` flag for selfish mining attack
-- `--attacker-hashrate RATIO` to set attacker's hashrate share (0.0-1.0)
-- Attack metrics in output: attacker blocks, honest blocks, wasted blocks, share
+- **Selfish Mining Attack**: `--attack selfish` with `--attacker-hashrate`
+- **51% Double Spend Attack**: `--attack double-spend` with `--confirmations`
+- **Eclipse Attack**: `--attack eclipse` with `--victim-nodes`
+- Attack metrics in output for each attack type
 
-### New Module
-- `attacks/selfish_miner.py`: Implements selfish mining strategy from Eyal & Sirer (2014)
+### New Files
+- `attacks/selfish_miner.py` - Selfish mining (Eyal & Sirer 2014)
+- `attacks/double_spend.py` - 51% double spend (Nakamoto 2008)
+- `attacks/eclipse.py` - Eclipse attack (Heilman et al. 2015)
 
 ## [1.2.0] - 2026-01-27
 
