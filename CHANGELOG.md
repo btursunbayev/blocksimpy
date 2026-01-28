@@ -3,22 +3,17 @@
 ## [1.3.0] - 2026-01-27
 
 ### Added
-- **Selfish Mining Attack**: `--attack selfish` with `--attacker-hashrate`
-- **51% Double Spend Attack**: `--attack double-spend` with `--confirmations`
-- **Eclipse Attack**: `--attack eclipse` with `--victim-nodes`
+- `--attack selfish` flag for selfish mining attack with configurable attacker hashrate (Eyal & Sirer 2014)
+- `--attack double-spend` flag for 51% double-spend attack with configurable confirmation depth (Nakamoto 2008)
+- `--attack eclipse` flag for eclipse attack with configurable victim nodes (Heilman et al. 2015)
 - Attack metrics in output for each attack type
-
-### New Files
-- `attacks/selfish_miner.py` - Selfish mining (Eyal & Sirer 2014)
-- `attacks/double_spend.py` - 51% double spend (Nakamoto 2008)
-- `attacks/eclipse.py` - Eclipse attack (Heilman et al. 2015)
 
 ## [1.2.0] - 2026-01-27
 
 ### Added
-- New `--export-metrics FILE` flag to export simulation metrics to JSON
-- New `--checkpoint FILE` flag to save simulation state at each print interval
-- New `--resume FILE` flag to resume a simulation from a saved checkpoint
+- `--export-metrics` flag to export simulation metrics to JSON
+- `--checkpoint` flag to save simulation state at each print interval
+- `--resume` flag to resume simulation from checkpoint
 
 ### Changed
 - Coordinator now accepts `initial_state` and `checkpoint_file` parameters for checkpoint/resume support
