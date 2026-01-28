@@ -1,16 +1,15 @@
 # BlockSimPy
 
-[![CI](https://github.com/bekmukhamed/blocksimpy/actions/workflows/ci.yml/badge.svg)](https://github.com/bekmukhamed/blocksimpy/actions/workflows/ci.yml)
 [![PyPI version](https://img.shields.io/pypi/v/blocksimpy.svg)](https://pypi.org/project/blocksimpy/)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 
-A discrete event simulator for blockchain networks that models mining competition, block propagation, difficulty adjustment, and economic incentives. Enables controlled experimentation with blockchain protocols without operating live cryptocurrency nodes.
+A discrete event simulator for blockchain networks that models mining competition, block propagation, difficulty adjustment, and economic incentives. The simulator enables controlled experimentation with blockchain protocols without operating live cryptocurrency nodes.
 
 **Supported chains:** Bitcoin, Bitcoin Cash, Litecoin, Dogecoin
 
 **Features:**
-- Proof-of-Work mining with realistic exponential timing
+- Proof-of-Work mining simulation with realistic exponential timing
 - Network propagation with configurable topology
 - Difficulty adjustment and halving events
 - Attack simulations (selfish mining, 51% double-spend, eclipse)
