@@ -117,7 +117,10 @@ def validate_configuration(config):
     # Check for warnings
     warning = None
     if blocks and blocks < expected_blocks:
-        warning = f"blocks ({blocks}) < expected blocks ({expected_blocks}) - some transactions may not be processed!"
+        warning = (
+            f"blocks ({blocks}) < expected ({expected_blocks}) - "
+            "some transactions may not be processed!"
+        )
 
     # Return validation results
     return {

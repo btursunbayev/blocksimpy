@@ -69,14 +69,21 @@ class Block:
         """
         self.id = block_id
         self.tx = transaction_count
-        self.size = HEADER_SIZE + transaction_count * 256  # Bytes: 1024 + (tx_count * 256)
+        self.size = (
+            HEADER_SIZE + transaction_count * 256
+        )  # Bytes: 1024 + (tx_count * 256)
         self.dt = time_since_last  # Inter-block time for difficulty analysis
         self.timestamp = timestamp if timestamp is not None else time.time()
 
     def __repr__(self) -> str:
         """String representation for debugging and logging."""
-        return f"Block(id={self.id}, tx={self.tx}, size={self.size}B, dt={self.dt:.1f}s)"
+        return (
+            f"Block(id={self.id}, tx={self.tx}, size={self.size}B, dt={self.dt:.1f}s)"
+        )
 
     def __str__(self) -> str:
         """Human-readable string representation."""
-        return f"Block #{self.id}: {self.tx} transactions, {self.size:,} bytes, {self.dt:.1f}s since last"
+        return (
+            f"Block #{self.id}: {self.tx} transactions, "
+            f"{self.size:,} bytes, {self.dt:.1f}s since last"
+        )

@@ -59,10 +59,12 @@ def print_configuration_summary(
     print("Configuration:")
     print(f"  Chain: {chain_name}")
     print(
-        f"  Network: {config['network']['nodes']} nodes, {config['network']['neighbors']} neighbors each"
+        f"  Network: {config['network']['nodes']} nodes, "
+        f"{config['network']['neighbors']} neighbors each"
     )
     print(
-        f"  Miners: {config['mining']['miners']} miners @ {config['mining']['hashrate']:,.0f} H/s each"
+        f"  Miners: {config['mining']['miners']} miners @ "
+        f"{config['mining']['hashrate']:,.0f} H/s each"
     )
     print(
         f"  Wallets: {config['transactions']['wallets']} wallets, "
@@ -97,7 +99,8 @@ def print_configuration_summary(
     # Timing information placeholder (to be filled by caller)
     print("Performance:")
     print(
-        f"  Simulated time: {simulated_time:,.2f} seconds ({simulated_days:,.2f} days / {simulated_years:,.4f} years)"
+        f"  Simulated time: {simulated_time:,.2f} seconds "
+        f"({simulated_days:,.2f} days / {simulated_years:,.4f} years)"
     )
 
 
@@ -216,9 +219,13 @@ def main() -> None:
         )
 
     elif args.attack == "eclipse":
+        from .attacks import EclipseAttacker
+
         # Eclipse attack uses normal miners but manipulates propagation
         miners = [Miner(i, hashrate) for i in range(num_miners)]
-        # Eclipse attacker will be set up in coordinator
+        victim_ids = list(range(args.victim_nodes))
+        eclipse_attacker = EclipseAttacker(victim_ids)
+        coordinator.eclipse_attacker = eclipse_attacker
         print(f"Attack mode: eclipse ({args.victim_nodes} victim nodes)")
 
     else:

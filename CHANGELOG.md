@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.3.1] - 2026-01-28
+
+### Fixed
+- Eclipse attack now properly integrated with coordinator
+- Line length violations in coordinator output
+
+### Changed
+- Author metadata moved to pyproject.toml with project URLs
+
 ## [1.3.0] - 2026-01-27
 
 ### Added

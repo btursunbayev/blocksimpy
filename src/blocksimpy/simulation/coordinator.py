@@ -227,8 +227,8 @@ class SimulationCoordinator:
                 if debug_mode:
                     print(
                         f"[{env.now:.2f}] Diff:{human(difficulty)} H:{total_hashrate_str} "
-                        f"Tx:{state.total_tx} C:{human(state.total_coins)} Pool:{len(self.pool)} "
-                        f"infl:N/A NMB:{self.metrics.network_data / 1e6:.2f} IO:{self.metrics.io_requests}"
+                        f"Tx:{state.total_tx} C:{human(state.total_coins)} "
+                        f"Pool:{len(self.pool)} NMB:{self.metrics.network_data / 1e6:.2f}"
                     )
 
             # Mining round
@@ -293,7 +293,7 @@ class SimulationCoordinator:
                     f"[{env.now:.2f}] B{b.id} by M{winner.id} dt:{b.dt:.2f}s "
                     f"Diff:{human(difficulty)} H:{total_hashrate_str} Tx:{state.total_tx} "
                     f"C:{human(state.total_coins)} Pool:{len(self.pool)} "
-                    f"infl:N/A NMB:{self.metrics.network_data / 1e6:.2f} IO:{self.metrics.io_requests}"
+                    f"infl:N/A NMB:{self.metrics.network_data / 1e6:.2f} IO:{self.metrics.io_requests}"  # noqa: E501
                 )
             elif state.block_count % print_interval == 0:
                 pct = (state.block_count / blocks_limit) * 100 if blocks_limit else 0
@@ -313,7 +313,7 @@ class SimulationCoordinator:
                 )
                 eta = (blocks_limit - state.block_count) * abt if blocks_limit else 0
                 print(
-                    f"[{env.now:.2f}] Sum B:{state.block_count}/{blocks_limit} {pct:.1f}% abt:{abt:.2f}s "
+                    f"[{env.now:.2f}] Sum B:{state.block_count}/{blocks_limit} {pct:.1f}% abt:{abt:.2f}s "  # noqa: E501
                     f"tps:{tps:.2f} infl:{infl:.2f}% ETA:{eta:.2f}s "
                     f"Diff:{human(difficulty)} H:{total_hashrate_str} Tx:{state.total_tx} "
                     f"C:{human(state.total_coins)} Pool:{len(self.pool)} "
@@ -367,7 +367,7 @@ class SimulationCoordinator:
 
         if blocks_limit:
             print(
-                f"[******] End B:{state.block_count}/{blocks_limit} 100.0% abt:{abt:.2f}s tps:{tps_total:.2f} "
+                f"[******] End B:{state.block_count}/{blocks_limit} 100.0% abt:{abt:.2f}s tps:{tps_total:.2f} "  # noqa: E501
                 f"infl:{infl_total:.2f}% Diff:{human(difficulty)} H:{total_hashrate_str} "
                 f"Tx:{state.total_tx} C:{human(state.total_coins)} Pool:{len(self.pool)} "
                 f"NMB:{self.metrics.network_data / 1e6:.2f} IO:{self.metrics.io_requests}"

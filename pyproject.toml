@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "blocksimpy"
-version = "1.3.0"
+version = "1.3.1"
 description = "A high-fidelity blockchain discrete event simulator for research and education"
 readme = "README.md"
 authors = [
-    {name = "Bekmukhamed", email = "bekmukhamed.tursunbayev@gmail.com"},
+    {name = "Bekmukhamed Tursunbayev", email = "bekmukhamed.tursunbayev@gmail.com"},
 ]
 keywords = [
     "blockchain",
@@ -65,9 +65,8 @@ test = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/btursunbayev/blocksimpy"
+Homepage = "https://btursunbayev.github.io/"
 Repository = "https://github.com/btursunbayev/blocksimpy.git"
-"Bug Tracker" = "https://github.com/btursunbayev/blocksimpy/issues"
 
 [project.scripts]
 blocksimpy = "blocksimpy.app:main"
