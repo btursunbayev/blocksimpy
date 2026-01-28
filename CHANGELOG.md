@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.3.0] - 2026-01-27
+
+### Added
+- New `--attack selfish` flag for selfish mining attack
+- `--attacker-hashrate RATIO` to set attacker's hashrate share (0.0-1.0)
+- Attack metrics in output: attacker blocks, honest blocks, wasted blocks, share
+
+### New Module
+- `attacks/selfish_miner.py`: Implements selfish mining strategy from Eyal & Sirer (2014)
+
 ## [1.2.0] - 2026-01-27
 
 ### Added

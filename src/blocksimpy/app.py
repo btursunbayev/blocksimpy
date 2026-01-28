@@ -169,10 +169,29 @@ def main() -> None:
         )
 
     # Create miners
-    miners = [
-        Miner(i, config["mining"]["hashrate"])
-        for i in range(config["mining"]["miners"])
-    ]
+    miners = []
+    num_miners = config["mining"]["miners"]
+    hashrate = config["mining"]["hashrate"]
+
+    # Check for attack mode
+    if args.attack == "selfish":
+        from .attacks import SelfishMiner
+
+        attacker_ratio = args.attacker_hashrate or 0.3  # Default 30%
+        attacker_hashrate = hashrate * num_miners * attacker_ratio
+        honest_hashrate = hashrate * num_miners * (1 - attacker_ratio) / (num_miners - 1)
+
+        # One selfish miner with proportional hashrate
+        miners.append(SelfishMiner(0, attacker_hashrate))
+
+        # Rest are honest miners
+        for i in range(1, num_miners):
+            miners.append(Miner(i, honest_hashrate))
+
+        print(f"Attack mode: selfish mining (attacker={attacker_ratio*100:.0f}% hashrate)")
+    else:
+        # Normal mode: all honest miners
+        miners = [Miner(i, hashrate) for i in range(num_miners)]
 
     # Load checkpoint if resuming
     initial_state = None
@@ -211,6 +230,20 @@ def main() -> None:
         print(f"  Average block time: {avg_block_time:.2f} seconds")
 
     print("=" * 60)
+
+    # Print attack results if present
+    if coordinator.attack_metrics:
+        print()
+        print("ATTACK RESULTS (Selfish Mining)")
+        print("-" * 40)
+        m = coordinator.attack_metrics
+        print(f"  Attacker blocks: {m['attacker_blocks']}")
+        print(f"  Honest blocks: {m['honest_blocks']}")
+        print(f"  Wasted honest blocks: {m['wasted_blocks']}")
+        print(f"  Attacker share: {m['attacker_share']*100:.1f}%")
+        print(f"  Attacker rewards: {m['attacker_rewards']:.2f}")
+        print(f"  Honest rewards: {m['honest_rewards']:.2f}")
+        print("=" * 60)
 
     # Export metrics if requested
     if args.export_metrics:

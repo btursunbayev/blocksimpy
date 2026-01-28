@@ -73,6 +73,9 @@ class SimulationCoordinator:
         # Metrics tracking (network, performance)
         self.metrics = SimulationMetrics()
 
+        # Attack metrics (set if selfish miners are present)
+        self.attack_metrics: Optional[Dict[str, Any]] = None
+
         # Final results (set after simulation completes)
         self.final_simulated_time = 0.0
         self.final_blocks = 0
@@ -234,6 +237,14 @@ class SimulationCoordinator:
                 env.process(m.mine(env, difficulty, block_found_event))
             winner = yield block_found_event
 
+            # Track selfish mining attack if present
+            selfish_miner = next(
+                (m for m in miners if getattr(m, "is_selfish", False)), None
+            )
+            if selfish_miner is not None:
+                is_attacker_block = winner is selfish_miner
+                selfish_miner.on_block_found(is_attacker_block, reward)
+
             # New block
             time_since_last = env.now - state.last_block_time
             state.last_block_time = env.now
@@ -335,6 +346,13 @@ class SimulationCoordinator:
         self.final_blocks = self.metrics.final_blocks
         self.total_tx = state.total_tx
         self.total_coins = state.total_coins
+
+        # Capture attack metrics if selfish miner present
+        selfish_miner = next(
+            (m for m in miners if getattr(m, "is_selfish", False)), None
+        )
+        if selfish_miner is not None:
+            self.attack_metrics = selfish_miner.get_attack_metrics()
 
         if blocks_limit:
             print(

@@ -173,6 +173,23 @@ Examples:
         help="Simulation duration in years (used if --blocks omitted)",
     )
 
+    # === Attack Simulation ===
+    attack_group = parser.add_argument_group("Attack Simulation")
+    attack_group.add_argument(
+        "--attack",
+        type=str,
+        choices=["selfish"],
+        metavar="TYPE",
+        help="Enable attack simulation (selfish = selfish mining)",
+    )
+    attack_group.add_argument(
+        "--attacker-hashrate",
+        dest="attacker_hashrate",
+        type=float,
+        metavar="RATIO",
+        help="Attacker's hashrate as fraction of total (0.0-1.0, e.g. 0.3 = 30%%)",
+    )
+
     # === Reporting & Debug (Section 2.4) ===
     output_group = parser.add_argument_group("Reporting & Debug")
     output_group.add_argument(
