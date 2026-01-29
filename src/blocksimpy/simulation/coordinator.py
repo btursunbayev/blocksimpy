@@ -167,8 +167,11 @@ class SimulationCoordinator:
             self.network_optimizer = None
 
         # Initialize simulation state (use provided state for resume, else create new)
-        # For PoW: sum hashrates; For PoS: sum stakes
-        total_weight = sum(getattr(m, "h", 0) or getattr(m, "stake", 1) for m in miners)
+        # For PoW: sum hashrates; For PoS: sum stakes; For PoSpace: sum space
+        total_weight = sum(
+            getattr(m, "h", 0) or getattr(m, "stake", 0) or getattr(m, "space", 1)
+            for m in miners
+        )
         if initial_state is not None:
             state = initial_state
             # Reset progress tracking to current env.now (0) to avoid negative deltas
@@ -186,8 +189,13 @@ class SimulationCoordinator:
         reward = state.reward
 
         # Cache total weight for performance (producers don't change during simulation)
-        # For PoW: "H" (hashrate), for PoS: "S" (stake)
-        weight_label = "H" if consensus_type == "pow" else "S"
+        # For PoW: "H" (hashrate), for PoS: "S" (stake), for PoSpace: "G" (GB)
+        if consensus_type == "pow":
+            weight_label = "H"
+        elif consensus_type == "pospace":
+            weight_label = "G"
+        else:
+            weight_label = "S"
         total_weight_str = human(total_weight)  # Pre-format for logging
 
         # Economic model config
@@ -237,12 +245,19 @@ class SimulationCoordinator:
                         f"Pool:{len(self.pool)} NMB:{self.metrics.network_data / 1e6:.2f}"
                     )
 
-            # Block production round (PoW or PoS)
+            # Block production round (PoW, PoS, or PoSpace)
             block_found_event = env.event()
 
             if consensus_type == "pos":
                 # PoS: select validator by stake weight, fixed block time
                 winner = select_validator(miners)
+                yield env.timeout(target_blocktime)
+                block_found_event.succeed(winner)
+            elif consensus_type == "pospace":
+                # PoSpace: select farmer by space weight, fixed block time
+                from ..consensus import select_farmer
+
+                winner = select_farmer(miners)
                 yield env.timeout(target_blocktime)
                 block_found_event.succeed(winner)
             else:
@@ -293,7 +308,11 @@ class SimulationCoordinator:
                 and (max_halvings is None or state.halvings < max_halvings)
             ):
                 state.halvings += 1
-                reward = reward / 2 if max_halvings is None or state.halvings < max_halvings else 0
+                reward = (
+                    reward / 2
+                    if max_halvings is None or state.halvings < max_halvings
+                    else 0
+                )
                 state.reward = reward
 
             # Propagate block through network using optimized graph-based algorithm

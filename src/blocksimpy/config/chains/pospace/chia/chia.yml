@@ -1,0 +1,34 @@
+# Chia Network PoSpace Configuration
+
+consensus:
+  type: pospace
+
+network:
+  nodes: 10
+  neighbors: 5
+
+mining:
+  miners: 10            # Number of farmers
+  hashrate: 1000.0      # Not used for PoSpace (kept for compatibility)
+  space: 100.0          # Space per farmer in GB (k32 plot ~101 GB)
+  blocktime: 18.75      # Chia: ~18.75s avg (32 blocks per 10 min)
+  blocksize: 4096
+  difficulty: null
+  retarget_interval: 4608  # Chia adjusts every 4608 blocks
+
+economics:
+  initial_reward: 2.0     # 2 XCH per block
+  halving_interval: 0     # No halvings
+  max_halvings: 999
+
+transactions:
+  wallets: 10
+  transactions_per_wallet: 10
+  interval: 10.0
+
+simulation:
+  blocks: null
+  years: 0.1
+  print_interval: 4608
+  debug: false
+  seed: 42

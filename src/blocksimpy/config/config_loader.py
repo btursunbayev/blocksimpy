@@ -61,8 +61,8 @@ def load_config(chain_name: str = "defaults") -> Dict[str, Any]:
         config_path = config_dir / "chains" / chain_name / f"{chain_name}.yml"
 
         if not config_path.exists():
-            # Search in pow/ and pos/ subfolders
-            for consensus_type in ["pow", "pos"]:
+            # Search in pow/, pos/, and pospace/ subfolders
+            for consensus_type in ["pow", "pos", "pospace"]:
                 alt_path = (
                     config_dir
                     / "chains"

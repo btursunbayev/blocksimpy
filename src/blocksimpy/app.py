@@ -62,10 +62,21 @@ def print_configuration_summary(
         f"  Network: {config['network']['nodes']} nodes, "
         f"{config['network']['neighbors']} neighbors each"
     )
-    print(
-        f"  Miners: {config['mining']['miners']} miners @ "
-        f"{config['mining']['hashrate']:,.0f} H/s each"
-    )
+
+    # Display miners/validators/farmers based on consensus type
+    consensus_type = config.get("consensus", {}).get("type", "pow")
+    num_producers = config["mining"]["miners"]
+
+    if consensus_type == "pos":
+        stake = config["mining"].get("stake", 1000)
+        print(f"  Validators: {num_producers} validators @ {stake:,.0f} stake each")
+    elif consensus_type == "pospace":
+        space = config["mining"].get("space", 100)
+        print(f"  Farmers: {num_producers} farmers @ {space:,.0f} GB each")
+    else:
+        hashrate = config["mining"]["hashrate"]
+        print(f"  Miners: {num_producers} miners @ {hashrate:,.0f} H/s each")
+
     print(
         f"  Wallets: {config['transactions']['wallets']} wallets, "
         f"{config['transactions']['transactions_per_wallet']} tx each"
@@ -174,7 +185,7 @@ def main() -> None:
     # Create miners
     miners = []
     num_miners = config["mining"]["miners"]
-    hashrate = config["mining"]["hashrate"]
+    hashrate = config["mining"].get("hashrate", 1000.0)  # Default for PoW
 
     # Check for attack mode
     if args.attack == "selfish":
@@ -238,6 +249,12 @@ def main() -> None:
             stake = config["mining"].get("stake", 1000)
             miners = [PoSValidator(i, stake) for i in range(num_miners)]
             print(f"Consensus: PoS ({num_miners} validators @ {stake:,.0f} stake each)")
+        elif consensus_type == "pospace":
+            from .consensus import PoSpaceFarmer
+
+            space = config["mining"].get("space", 100)
+            miners = [PoSpaceFarmer(i, space) for i in range(num_miners)]
+            print(f"Consensus: PoSpace ({num_miners} farmers @ {space:,.0f} GB each)")
         else:
             miners = [Miner(i, hashrate) for i in range(num_miners)]
 

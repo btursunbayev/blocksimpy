@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0] - 2026-01-28
+
+### Added
+- Proof-of-Space (PoSpace) consensus mechanism with space-weighted farmer selection
+- Chia Network chain configuration (`--chain chia`)
+
+
 ## [1.4.0] - 2026-01-28
 
 ### Added
