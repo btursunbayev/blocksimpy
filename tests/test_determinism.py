@@ -4,7 +4,7 @@ import random
 
 import simpy
 
-from blocksimpy.core.miner import Miner
+from blocksimpy.consensus import Miner
 from blocksimpy.core.node import Node
 from blocksimpy.simulation.coordinator import SimulationCoordinator
 from blocksimpy.simulation.wallet import wallet

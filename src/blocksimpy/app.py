@@ -23,7 +23,7 @@ import simpy
 
 from .cli.args_parser import parse_args
 from .config.config_loader import load_config, merge_cli_args
-from .core.miner import Miner
+from .consensus import Miner
 from .core.node import Node
 from .simulation.coordinator import SimulationCoordinator
 from .simulation.state import SimulationState
@@ -229,8 +229,17 @@ def main() -> None:
         print(f"Attack mode: eclipse ({args.victim_nodes} victim nodes)")
 
     else:
-        # Normal mode: all honest miners
-        miners = [Miner(i, hashrate) for i in range(num_miners)]
+        # Normal mode: create block producers based on consensus type
+        consensus_type = config.get("consensus", {}).get("type", "pow")
+
+        if consensus_type == "pos":
+            from .consensus import PoSValidator
+
+            stake = config["mining"].get("stake", 1000)
+            miners = [PoSValidator(i, stake) for i in range(num_miners)]
+            print(f"Consensus: PoS ({num_miners} validators @ {stake:,.0f} stake each)")
+        else:
+            miners = [Miner(i, hashrate) for i in range(num_miners)]
 
     # Load checkpoint if resuming
     initial_state = None

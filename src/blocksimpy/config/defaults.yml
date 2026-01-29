@@ -1,15 +1,18 @@
 # Default configuration for blockchain simulator
 # These values are used when no configuration file is provided
 
+consensus:
+  type: pow              # Consensus mechanism: pow or pos
+
 network:
-  nodes: 10              # Medium network size for balance of realism and performance
-  neighbors: 5            # Moderate connectivity
-  propagation_delay: 0.0  # No network delay for simplicity
+  nodes: 10
+  neighbors: 5
 
 mining:
-  miners: 10              # Small number of miners
-  hashrate: 1000.0        # Moderate hashrate
-  blocktime: 600.0         # 10 minute blocks
+  miners: 10              # Small number of miners (or validators for PoS)
+  hashrate: 1000.0        # Moderate hashrate (PoW only)
+  stake: 1000.0           # Stake per validator (PoS only)
+  blocktime: 600.0        # Target block interval: 600 seconds (10 minutes)
   blocksize: 4096          # Moderate block size
   difficulty: null        # Auto-adjust difficulty
   retarget_interval: 2016 # Blocks between difficulty adjustments

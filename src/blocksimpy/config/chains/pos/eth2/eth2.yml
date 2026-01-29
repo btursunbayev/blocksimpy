@@ -1,0 +1,34 @@
+# Ethereum 2.0 (Beacon Chain) PoS Configuration
+
+consensus:
+  type: pos
+
+network:
+  nodes: 10
+  neighbors: 5
+
+mining:
+  miners: 10
+  hashrate: 1000.0        # Not used for PoS, kept for compatibility
+  stake: 32.0             # 32 ETH minimum validator stake
+  blocktime: 12.0         # 12 seconds per slot
+  blocksize: 4096
+  difficulty: null
+  retarget_interval: 2016
+
+economics:
+  initial_reward: 0.064   # ~0.064 ETH per slot (post-Merge typical)
+  halving_interval: 0     # No halvings in PoS
+  max_halvings: 999       # High number = always issue rewards
+
+transactions:
+  wallets: 10
+  transactions_per_wallet: 10
+  interval: 10.0
+
+simulation:
+  blocks: null
+  years: 0.1
+  print_interval: 144
+  debug: false
+  seed: 42

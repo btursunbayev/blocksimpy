@@ -2,13 +2,14 @@
 
 ## Presets
 
-| Chain | Block Time | Reward | Halving | Block Size | Use Case |
-|-------|-----------|--------|---------|-----------|----------|
-| **btc** | 600s | 50 BTC | 210k blocks | 4096 tx | Bitcoin modeling |
-| **bch** | 600s | 6.25 BCH | 210k blocks | 32768 tx | Large block testing |
-| **ltc** | 150s | 50 LTC | 840k blocks | 4096 tx | Fast simulations (4× speed) |
-| **doge** | 60s | 10000 DOGE | None | 4096 tx | Rapid testing (10× speed) |
-| **defaults** | 10s | 50 | 210k blocks | 4096 tx | Development |
+| Chain | Block Time | Reward | Halving | Block Size | Consensus | Use Case |
+|-------|-----------|--------|---------|-----------|-----------|----------|
+| **btc** | 600s | 50 BTC | 210k blocks | 4096 tx | PoW | Bitcoin modeling |
+| **bch** | 600s | 6.25 BCH | 210k blocks | 32768 tx | PoW | Large block testing |
+| **ltc** | 150s | 50 LTC | 840k blocks | 4096 tx | PoW | Fast simulations (4× speed) |
+| **doge** | 60s | 10000 DOGE | None | 4096 tx | PoW | Rapid testing (10× speed) |
+| **eth2** | 12s | 0.064 ETH | None | 4096 tx | PoS | Proof of Stake testing |
+| **defaults** | 10s | 50 | 210k blocks | 4096 tx | PoW | Development |
 
 Usage: `blocksimpy --chain btc --blocks 100`
 
@@ -20,27 +21,36 @@ Usage: `blocksimpy --chain btc --blocks 100`
 network:
   nodes: 10              # Number of network peers
   neighbors: 5           # Connections per node
-  propagation_delay: 0.1 # Unused (legacy parameter)
 ```
 
 **nodes**: Total network participants storing blockchain.  
-**neighbors**: Peer connections per node. Must be < nodes. Real Bitcoin uses 8-125.  
-**propagation_delay**: Ignored by current BFS optimization.
+**neighbors**: Peer connections per node. Must be < nodes. Real Bitcoin uses 8-125.
+
+### Consensus
+
+```yaml
+consensus:
+  type: pow   # pow or pos
+```
+
+**type**: Consensus mechanism. `pow` for Proof-of-Work (Bitcoin, Litecoin), `pos` for Proof-of-Stake (Ethereum 2.0).
 
 ### Mining
 
 ```yaml
 mining:
-  miners: 10           # Number of competing miners
-  hashrate: 1000000.0  # Hashrate per miner (H/s)
+  miners: 10           # Number of competing miners/validators
+  hashrate: 1000000.0  # Hashrate per miner (H/s) - PoW only
+  stake: 32.0          # Stake per validator - PoS only
   blocktime: 600.0     # Target block interval (seconds)
   blocksize: 4096      # Max transactions per block
   difficulty: null     # Auto-calculated if null
 ```
 
-**miners**: Active mining participants.  
-**hashrate**: Individual miner capacity. Total network hashrate = miners × hashrate.  
-**blocktime**: Target seconds between blocks. Bitcoin: 600s, Litecoin: 150s, Dogecoin: 60s.  
+**miners**: Active mining participants (PoW) or validators (PoS).  
+**hashrate**: Individual miner capacity. Total network hashrate = miners × hashrate. PoW only.  
+**stake**: Tokens staked per validator. PoS only, determines selection probability.  
+**blocktime**: Target seconds between blocks. Bitcoin: 600s, Ethereum 2.0: 12s.  
 **blocksize**: Transaction capacity. Bitcoin: ~4096, Bitcoin Cash: ~32768.  
 **difficulty**: Mining difficulty. If null, auto-calculates as blocktime × total_hashrate.
 

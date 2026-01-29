@@ -1,22 +1,24 @@
-# Realistic Dogecoin network parameters for simulations
+# Bitcoin Cash network parameters
+
+consensus:
+  type: pow
 
 network:
-  nodes: 10            # Number of network nodes
-  neighbors: 5            # Connections per node
-  propagation_delay: 0.1  # Block propagation delay in seconds
+  nodes: 10
+  neighbors: 5
 
 mining:
   miners: 10            # Number of mining entities
   hashrate: 1000000.0     # Hashrate per miner (1 TH/s in H/s equivalent)
-  blocktime: 60.0        # Target block time in seconds (1 minute)
-  blocksize: 4096         # Max transactions per block
+  blocktime: 600.0        # Target block time in seconds (10 minutes)
+  blocksize: 131072         # Max transactions per block
   difficulty: null        # Auto-adjust difficulty (null = automatic)
-  retarget_interval: 1    # Dogecoin adjusts every block
+  retarget_interval: 2016 # Blocks between difficulty adjustments
   
 economics:
-  initial_reward: 10000    # Block reward (no halvings)
-  halving_interval: 0      # No halvings
-  max_halvings: 999        # Effectively infinite (halving_interval=0 disables halvings)
+  initial_reward: 12.5    # Initial block reward
+  halving_interval: 210000 # Blocks between halvings (~4 years)
+  max_halvings: 35        # Maximum number of halvings before reward = 0
   
 transactions:
   wallets: 10         # Number of wallet entities generating transactions

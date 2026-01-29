@@ -1,9 +1,11 @@
-# Realistic Litecoin network parameters for simulations
+# Litecoin network parameters
+
+consensus:
+  type: pow
 
 network:
-  nodes: 10            # Number of network nodes
-  neighbors: 5            # Connections per node
-  propagation_delay: 0.1  # Block propagation delay in seconds
+  nodes: 10
+  neighbors: 5
 
 mining:
   miners: 10            # Number of mining entities

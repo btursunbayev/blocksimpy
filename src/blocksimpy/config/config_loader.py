@@ -57,7 +57,22 @@ def load_config(chain_name: str = "defaults") -> Dict[str, Any]:
         config_path = config_dir / "defaults.yml"
     else:
         # Load chain-specific config from chains subdirectory
+        # Try direct path first, then search in pow/ and pos/ folders
         config_path = config_dir / "chains" / chain_name / f"{chain_name}.yml"
+
+        if not config_path.exists():
+            # Search in pow/ and pos/ subfolders
+            for consensus_type in ["pow", "pos"]:
+                alt_path = (
+                    config_dir
+                    / "chains"
+                    / consensus_type
+                    / chain_name
+                    / f"{chain_name}.yml"
+                )
+                if alt_path.exists():
+                    config_path = alt_path
+                    break
 
     try:
         if config_path.exists():
@@ -119,6 +134,8 @@ def merge_cli_args(config: Dict[str, Any], args: argparse.Namespace) -> Dict[str
         "miners": ("mining", "miners"),
         "hashrate": ("mining", "hashrate"),
         "difficulty": ("mining", "difficulty"),
+        "stake": ("mining", "stake"),
+        "consensus": ("consensus", "type"),
         "blocks": ("simulation", "blocks"),
         "years": ("simulation", "years"),
         "wallets": ("transactions", "wallets"),

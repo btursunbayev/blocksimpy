@@ -4,7 +4,7 @@ import random
 
 import simpy
 
-from blocksimpy.core.miner import Miner
+from blocksimpy.consensus import Miner
 
 
 class TestMinerCreation:

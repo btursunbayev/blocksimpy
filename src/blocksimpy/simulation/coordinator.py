@@ -23,8 +23,8 @@ from typing import Any, Deque, Dict, List, Optional
 
 import simpy
 
+from ..consensus import Miner, select_validator
 from ..core.block import Block
-from ..core.miner import Miner
 from ..core.node import Node
 from ..utils.formatting import YEAR, human
 from ..utils.network_optimizer import NetworkPropagationOptimizer
@@ -156,6 +156,9 @@ class SimulationCoordinator:
         halving_interval = self.config["economics"]["halving_interval"]
         retarget_interval = self.config["mining"].get("retarget_interval", 2016)
 
+        # Consensus type (pow or pos)
+        consensus_type = self.config.get("consensus", {}).get("type", "pow")
+
         # Initialize network propagation optimizer
         # Pre-computes block propagation paths using BFS for optimal performance
         if nodes:
@@ -164,7 +167,8 @@ class SimulationCoordinator:
             self.network_optimizer = None
 
         # Initialize simulation state (use provided state for resume, else create new)
-        total_hashrate = sum(m.h for m in miners)
+        # For PoW: sum hashrates; For PoS: sum stakes
+        total_weight = sum(getattr(m, "h", 0) or getattr(m, "stake", 1) for m in miners)
         if initial_state is not None:
             state = initial_state
             # Reset progress tracking to current env.now (0) to avoid negative deltas
@@ -175,14 +179,16 @@ class SimulationCoordinator:
             state.last_tx = state.total_tx
             state.last_coins = state.total_coins
         else:
-            state = SimulationState.from_config(self.config, total_hashrate)
+            state = SimulationState.from_config(self.config, total_weight)
 
         # Local aliases for frequently accessed state (readability)
         difficulty = state.difficulty
         reward = state.reward
 
-        # Cache total hashrate for performance (miners don't change during simulation)
-        total_hashrate_str = human(total_hashrate)  # Pre-format for logging
+        # Cache total weight for performance (producers don't change during simulation)
+        # For PoW: "H" (hashrate), for PoS: "S" (stake)
+        weight_label = "H" if consensus_type == "pow" else "S"
+        total_weight_str = human(total_weight)  # Pre-format for logging
 
         # Economic model config
         max_halvings = self.config["economics"]["max_halvings"]
@@ -226,16 +232,24 @@ class SimulationCoordinator:
                 state.blocks_since_adjustment = 0
                 if debug_mode:
                     print(
-                        f"[{env.now:.2f}] Diff:{human(difficulty)} H:{total_hashrate_str} "
+                        f"[{env.now:.2f}] Diff:{human(difficulty)} {weight_label}:{total_weight_str} "  # noqa: E501
                         f"Tx:{state.total_tx} C:{human(state.total_coins)} "
                         f"Pool:{len(self.pool)} NMB:{self.metrics.network_data / 1e6:.2f}"
                     )
 
-            # Mining round
+            # Block production round (PoW or PoS)
             block_found_event = env.event()
-            for m in miners:
-                env.process(m.mine(env, difficulty, block_found_event))
-            winner = yield block_found_event
+
+            if consensus_type == "pos":
+                # PoS: select validator by stake weight, fixed block time
+                winner = select_validator(miners)
+                yield env.timeout(target_blocktime)
+                block_found_event.succeed(winner)
+            else:
+                # PoW: all miners race to find block
+                for m in miners:
+                    env.process(m.mine(env, difficulty, block_found_event))
+                winner = yield block_found_event
 
             # Track attack if attacker present
             attacker = next(
@@ -271,15 +285,15 @@ class SimulationCoordinator:
             state.total_tx += txs
 
             # Mint reward and halving
-            if state.halvings < max_halvings:
+            if max_halvings is None or state.halvings < max_halvings:
                 state.total_coins += reward
             if (
                 halving_interval > 0
                 and state.block_count % halving_interval == 0
-                and state.halvings < max_halvings
+                and (max_halvings is None or state.halvings < max_halvings)
             ):
                 state.halvings += 1
-                reward = reward / 2 if state.halvings < max_halvings else 0
+                reward = reward / 2 if max_halvings is None or state.halvings < max_halvings else 0
                 state.reward = reward
 
             # Propagate block through network using optimized graph-based algorithm
@@ -291,7 +305,7 @@ class SimulationCoordinator:
             if debug_mode:
                 print(
                     f"[{env.now:.2f}] B{b.id} by M{winner.id} dt:{b.dt:.2f}s "
-                    f"Diff:{human(difficulty)} H:{total_hashrate_str} Tx:{state.total_tx} "
+                    f"Diff:{human(difficulty)} {weight_label}:{total_weight_str} Tx:{state.total_tx} "  # noqa: E501
                     f"C:{human(state.total_coins)} Pool:{len(self.pool)} "
                     f"infl:N/A NMB:{self.metrics.network_data / 1e6:.2f} IO:{self.metrics.io_requests}"  # noqa: E501
                 )
@@ -315,7 +329,7 @@ class SimulationCoordinator:
                 print(
                     f"[{env.now:.2f}] Sum B:{state.block_count}/{blocks_limit} {pct:.1f}% abt:{abt:.2f}s "  # noqa: E501
                     f"tps:{tps:.2f} infl:{infl:.2f}% ETA:{eta:.2f}s "
-                    f"Diff:{human(difficulty)} H:{total_hashrate_str} Tx:{state.total_tx} "
+                    f"Diff:{human(difficulty)} {weight_label}:{total_weight_str} Tx:{state.total_tx} "  # noqa: E501
                     f"C:{human(state.total_coins)} Pool:{len(self.pool)} "
                     f"NMB:{self.metrics.network_data / 1e6:.2f} IO:{self.metrics.io_requests}"
                 )
@@ -368,14 +382,14 @@ class SimulationCoordinator:
         if blocks_limit:
             print(
                 f"[******] End B:{state.block_count}/{blocks_limit} 100.0% abt:{abt:.2f}s tps:{tps_total:.2f} "  # noqa: E501
-                f"infl:{infl_total:.2f}% Diff:{human(difficulty)} H:{total_hashrate_str} "
+                f"infl:{infl_total:.2f}% Diff:{human(difficulty)} {weight_label}:{total_weight_str} "  # noqa: E501
                 f"Tx:{state.total_tx} C:{human(state.total_coins)} Pool:{len(self.pool)} "
                 f"NMB:{self.metrics.network_data / 1e6:.2f} IO:{self.metrics.io_requests}"
             )
         else:
             print(
                 f"[******] End B:{state.block_count} abt:{abt:.2f}s tps:{tps_total:.2f} "
-                f"infl:{infl_total:.2f}% Diff:{human(difficulty)} H:{total_hashrate_str} "
+                f"infl:{infl_total:.2f}% Diff:{human(difficulty)} {weight_label}:{total_weight_str} "  # noqa: E501
                 f"Tx:{state.total_tx} C:{human(state.total_coins)} Pool:{len(self.pool)} "
                 f"NMB:{self.metrics.network_data / 1e6:.2f} IO:{self.metrics.io_requests}"
             )

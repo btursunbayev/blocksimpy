@@ -88,6 +88,14 @@ Examples:
     # === Mining & Difficulty (Section 2.2) ===
     mining_group = parser.add_argument_group("Mining Configuration")
     mining_group.add_argument(
+        "--consensus",
+        type=str,
+        choices=["pow", "pos"],
+        default=None,
+        metavar="TYPE",
+        help="Consensus mechanism: pow (Proof of Work) or pos (Proof of Stake)",
+    )
+    mining_group.add_argument(
         "--miners",
         type=int,
         metavar="K",
@@ -97,7 +105,13 @@ Examples:
         "--hashrate",
         type=float,
         metavar="H",
-        help="Hashrate per miner (total_hashrate affects block timing)",
+        help="Hashrate per miner (PoW only)",
+    )
+    mining_group.add_argument(
+        "--stake",
+        type=float,
+        metavar="S",
+        help="Stake per validator (PoS only, default: 1000)",
     )
     mining_group.add_argument(
         "--difficulty",

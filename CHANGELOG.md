@@ -1,10 +1,27 @@
 # Changelog
 
+## [1.4.0] - 2026-01-28
+
+### Added
+- Proof-of-Stake (PoS) consensus mechanism with stake-weighted validator selection
+- Ethereum 2.0 chain configuration (`--chain eth2`)
+- Chain configs organized into `chains/pow/` and `chains/pos/` directories
+
+### Changed
+- All PoW chain configs now explicitly declare `consensus.type: pow`
+- README updated
+- CONFIGURATION_GUIDE updated with consensus mechanism documentation
+
+### Fixed
+- Critical bug: `max_halvings=None` comparison now properly handled (treats None as unlimited)
+
+### Removed
+- `propagation_delay` parameter removed from all configs and tests (unused legacy parameter)
+
 ## [1.3.1] - 2026-01-28
 
 ### Fixed
 - Eclipse attack now properly integrated with coordinator
-- Line length violations in coordinator output
 
 ### Changed
 - Author metadata moved to pyproject.toml with project URLs

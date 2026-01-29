@@ -24,7 +24,6 @@ def mini_config() -> Dict[str, Any]:
         "network": {
             "nodes": 3,
             "neighbors": 2,
-            "propagation_delay": 0.0,
         },
         "mining": {
             "miners": 2,

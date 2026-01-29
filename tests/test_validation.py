@@ -26,7 +26,7 @@ from multiprocessing import cpu_count
 import simpy
 
 from src.blocksimpy.config.config_loader import load_config
-from src.blocksimpy.core.miner import Miner
+from src.blocksimpy.consensus import Miner
 from src.blocksimpy.core.node import Node
 from src.blocksimpy.simulation.coordinator import SimulationCoordinator
 from src.blocksimpy.simulation.wallet import wallet
