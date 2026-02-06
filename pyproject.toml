@@ -65,8 +65,8 @@ test = [
 ]
 
 [project.urls]
-Homepage = "https://btursunbayev.github.io/"
-Repository = "https://github.com/btursunbayev/blocksimpy.git"
+Homepage = "https://btursunbayev.com"
+Repository = "https://github.com/btursunbayev/blocksimpy"
 
 [project.scripts]
 blocksimpy = "blocksimpy.app:main"
